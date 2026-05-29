@@ -26,6 +26,7 @@
 
 #include <iostream>
 */
+
 const int npmt = 12;
 const int npla = 6;
 const int nrow = 3;
@@ -40,7 +41,7 @@ const int tdc_max = -500;
 const int tdc_bins = 500;
 
 const int tof_min = -250;
-const int tof_max =-50;
+const int tof_max =50;
 const int tof_bins = 200;
 const int tof_sbt_min = -22500;
 const int tof_sbt_max = -16500;
@@ -48,13 +49,14 @@ const int tof_sbt_bins = 500;
 
 
 
-const int qdc_max = 1500;
+const int qdc_max = 4400;
 const int qdc_min = 1;
-const int qdc_bins = static_cast<int>(0.25*(qdc_max-qdc_min+1));
+const int qdc_bins = static_cast<int>(1*(qdc_max-qdc_min+1));
 const int qdc_init = -1;
 const int tdc_init = -999999;
 
-std::vector<int>qdc_ped= {91,45,55,65,90,80,62,90,95,87,100,81,90};
+//std::vector<int>qdc_ped= {91,45,55,65,90,80,62,90,95,87,100,81,90};
+std::vector<int>qdc_ped =  {55,13,57,27,66,49,48,55,60,68,65,67};
 //std::vector<int>qdc_ped(12);
 
 void plachk(Int_t nRun, bool sbt_evt = 0){
@@ -64,6 +66,7 @@ void plachk(Int_t nRun, bool sbt_evt = 0){
 	TArtRawEventObject *rawevent = estore->GetRawEventObject();
 
 	TFile *fout = new TFile(Form("root/sisir/plachk_neotest%04d_sbt%d.root", nRun,sbt_evt),"RECREATE");
+	//TFile *fout = new TFile(Form("root/sisir/plachk_neotest%04d_pedestal.root", nRun),"RECREATE");
 
 	TH1 *h_qtc_pmt[npmt];
 	TH1 *h_qdc_pmt[npmt];
@@ -132,9 +135,9 @@ void plachk(Int_t nRun, bool sbt_evt = 0){
 
 		h_tof_row[i] = new TH1D(Form("h_tof_row%d",i),Form("Time of Flight for the Row %d",i),tof_bins, tof_min, tof_max);
 		h_Qsum_row[i] = new TH1D(Form("h_Qsum_row%d",i),Form("Total Light Ouptut for the Row %d",i),2*qdc_bins, qdc_min, 2*qdc_max);	
-		h_Q1tof_row[i] = new TH2D(Form("h_Q1tof_row%d",i),Form("Q1 vs ToF for the Row %d",i),tof_bins, tof_min, tof_max,2*qdc_bins, qdc_min, 2*qdc_max);	
-		h_Q2tof_row[i] = new TH2D(Form("h_Q2tof_row%d",i),Form("Q2 vs ToF for the Row %d",i),tof_bins, tof_min, tof_max,2*qdc_bins, qdc_min, 2*qdc_max);
-		h_Qsumtof_row[i] = new TH2D(Form("h_Qsumtof_row%d",i),Form("Qsum vs ToF for the Row %d",i),tof_bins, tof_min, tof_max,2*qdc_bins, qdc_min, 2*qdc_max);
+		h_Q1tof_row[i] = new TH2D(Form("h_Q1tof_row%d",i),Form("Q1 vs ToF for the Row %d",i),tof_bins, tof_min, tof_max,2*qdc_bins, qdc_min, 1*qdc_max);	
+		h_Q2tof_row[i] = new TH2D(Form("h_Q2tof_row%d",i),Form("Q2 vs ToF for the Row %d",i),tof_bins, tof_min, tof_max,2*qdc_bins, qdc_min, 1*qdc_max);
+		h_Qsumtof_row[i] = new TH2D(Form("h_Qsumtof_row%d",i),Form("Qsum vs ToF for the Row %d",i),tof_bins, tof_min, tof_max,2*qdc_bins, qdc_min, 1*qdc_max);
 
 	}
 
@@ -277,6 +280,8 @@ void plachk(Int_t nRun, bool sbt_evt = 0){
 
 					if (ch ==8) continue;
 					if(ch ==15) ch = 8;
+				//	if(ch == 6) {ch =4;}
+				//	else if(ch==4) {ch =6;}
 
 					if(ch >npmt) continue;	
 					qdc_pmt[ch] = val-qdc_ped[ch];
