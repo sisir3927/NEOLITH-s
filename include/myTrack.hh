@@ -4,14 +4,15 @@
 #include "TVector3.h"
 #include "TMath.h"
 
-class myTrack{
+class myTrack:public TObject{
 
 	public:
 		myTrack();
-		~myTrack();
+	virtual	~myTrack();
 
 
 	void Clear();
+	void Clear(TVector3*  pos);
 
 	void SetConvPos(double x, double y, double z){fConvPos->SetXYZ(x,y,z);}
 	void SetConvPos(TVector3* pos) {fConvPos =pos;}
@@ -79,7 +80,7 @@ class myTrack{
 
 
 
-
+ClassDef(myTrack,1);
 
 };
 
