@@ -40,6 +40,7 @@
 #include "myTrack.hh"
 #include "myDCHit.hh"
 #include "myDCHitPara.hh"
+#include "myDCevt.hh"
 
 // Header files passed via #pragma extra_include
 
@@ -554,6 +555,7 @@ namespace {
 "myTrack.hh",
 "myDCHit.hh",
 "myDCHitPara.hh",
+"myDCevt.hh",
 nullptr
     };
     static const char* includePaths[] = {
@@ -585,6 +587,7 @@ class __attribute__((annotate("$clingAutoload$myDCHitPara.hh")))  myDCHitPara;
 #include "myTrack.hh"
 #include "myDCHit.hh"
 #include "myDCHitPara.hh"
+#include "myDCevt.hh"
 
 #undef  _BACKWARD_BACKWARD_WARNING_H
 )DICTPAYLOAD";

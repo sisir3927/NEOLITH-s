@@ -43,9 +43,9 @@ const int tdc_bins = 500;
 const int tof_min = -250;
 const int tof_max =50;
 const int tof_bins = 200;
-const int tof_sbt_min = -22500;
+const int tof_sbt_min = -26500;
 const int tof_sbt_max = -16500;
-const int tof_sbt_bins = 500;
+const int tof_sbt_bins = 1500;
 
 
 
@@ -105,13 +105,13 @@ void plachk(Int_t nRun, bool sbt_evt = 0){
 
 			h_tdiff_pla[i] = new TH1D(Form("h_tdiff_pla%d",i),Form("Time Difference Distribution for Plastic %d",i),500,-500,500);
 
-			h_Qtdiff_pla[i] = new TH2D(Form("h_Qtdiff_pla%d",i),Form("QDC vs Time Difference Distribution for Plastic %d",i),500,-500,500,400,1,1000);
+			h_Qtdiff_pla[i] = new TH2D(Form("h_Qtdiff_pla%d",i),Form("QDC vs Time Difference Distribution for Plastic %d",i),700,-500,500,400,1,3000);
 
 			h_tdifftofsbt_pla[i] = new TH2D(Form("h_tdifftofsbt_pla%d",i),Form("Time Differece vs ToF_SBT for Plastic %d",i),tof_sbt_bins, tof_sbt_min,tof_sbt_max,500,-500,500);
 		} else{
 
 			h_tdiff_pla[i] = new TH1D(Form("h_tdiff_pla%d",i),Form("Time Difference Distribution for Plastic %d",i),500,-1000,000);
-			h_Qtdiff_pla[i] = new TH2D(Form("h_Qtdiff_pla%d",i),Form("QDC vs Time Difference Distribution for Plastic %d",i),500,-1000,500,400,1,1000);
+			h_Qtdiff_pla[i] = new TH2D(Form("h_Qtdiff_pla%d",i),Form("QDC vs Time Difference Distribution for Plastic %d",i),900,-1000,500,400,1,3000);
 
 			h_tdifftofsbt_pla[i] = new TH2D(Form("h_tdifftofsbt_pla%d",i),Form("Time Differece vs ToF_SBT for Plastic %d",i),tof_sbt_bins, tof_sbt_min,tof_sbt_max,500,-1000,500);
 		}

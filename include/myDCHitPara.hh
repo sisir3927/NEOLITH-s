@@ -7,13 +7,13 @@ class myDCHitPara:public TObject{
 
 	public:
 		myDCHitPara(){};
-		myDCHitPara(int i, TString n, Int_t wid, Double_t wp, Double_t wz,TString dr){
-		id =i; detname =n; wireid = wid; wirepos = wp;  dir =dr;}
+		myDCHitPara(int i, TString n, Int_t wid, Double_t wp, Double_t wz,TString dr, Bool_t asagi){
+		id =i; detname =n; wireid = wid; wirepos = wp;  dir =dr; fasagi = asagi;}
 		~myDCHitPara(){};
 
-		void SetParameters(Int_t i, TString n, Int_t wid, Double_t wp, Double_t wz, TString dr){
+		void SetParameters(Int_t i, TString n, Int_t wid, Double_t wp, Double_t wz, TString dr, Bool_t asagi){
 		
-		id =i; detname =n; wireid = wid; wirepos = wp;  dir =dr;
+		id =i; detname =n; wireid = wid; wirepos = wp;  dir =dr; fasagi = asagi;
 		}
 		void SetMap(Int_t tg, Int_t tc){
 			fgeo =tg;
@@ -29,6 +29,7 @@ class myDCHitPara:public TObject{
 		Double_t GetWireZPosition() const {return wirez;}
 		TString *GetWireDirection(){return &dir;}
 		Int_t GetGeo(){return fgeo;}
+		Bool_t GetIsAsagi(){return fasagi;}
 		
 
 
@@ -46,6 +47,7 @@ class myDCHitPara:public TObject{
 		TString dir;
 
 		Int_t fgeo;
+		Bool_t fasagi;
 		
 
 	ClassDef(myDCHitPara,1);	

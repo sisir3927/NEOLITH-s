@@ -4,7 +4,21 @@
 class myDCHit:public TObject{
 
 	public:
-		myDCHit(){};
+		myDCHit(){
+		
+		fwirenum =-1;
+		fID =-1;
+		fleadedge = ftdc_init;
+		ftrailedge = ftdc_init;
+		ftot = ftdc_init;
+
+		fname ="NA";
+		fwirepos = ftdc_init;
+		fwireposz = ftdc_init;
+		fasagi = 0;
+		
+		
+		};
 	virtual	~myDCHit(){};
 		
 		void SetID(int id){fID =id;}
@@ -20,6 +34,8 @@ class myDCHit:public TObject{
 		void SetWirePosz(int wposz){fwireposz =wposz;}
 
 		void SetDir(TString nm){fdir =nm;}
+
+		void SetIsAsagi(Bool_t asagi) {fasagi = asagi;}
 		
 		int GetID(){return fID;}
 		int GetWireNum()const {return fwirenum;}
@@ -32,6 +48,8 @@ class myDCHit:public TObject{
 
 		TString *GetDetName(){return &fname;}
 		TString *GetDir(){return &fdir;}
+
+		Bool_t IsAsagi(){return fasagi;}
 
 
 
@@ -68,6 +86,7 @@ class myDCHit:public TObject{
 		double fwireposz;
 		TString fname;
 		TString fdir;
+		Bool_t fasagi;
 
 		const int ftdc_init = -99999;
 
