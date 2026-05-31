@@ -11,6 +11,9 @@ class myDCevt:public TObject{
 		fx =-99999;
 		fy = -99999;
 		fz = -99999;
+		fgrpid_u = -1;
+		fgrpid_v = -1;
+		fgrpid_x = -1;
 		fpos.SetXYZ(fx,fy,fz);		
 		
 		};
@@ -32,6 +35,13 @@ class myDCevt:public TObject{
 	fpos.SetXYZ(fx,fy,fz);
 	}
 
+	void SetVGrpID(Int_t id){fgrpid_v = id;}
+	void SetUGrpID(Int_t id){fgrpid_u = id;}
+	void SetXGrpID(Int_t id){fgrpid_x = id;}
+
+	Int_t GetVGrpID(){return fgrpid_v;}
+	Int_t GetUGrpID(){return fgrpid_u;}
+	Int_t GetXGrpID(){return fgrpid_x;}
 
 	TVector3 GetPos(){return fpos;}
 	Double_t GetX(){return fx;}
@@ -44,6 +54,10 @@ class myDCevt:public TObject{
 		Int_t fx;
 		Int_t fy;
 		Int_t fz;
+		Int_t fgrpid_u;
+		Int_t fgrpid_v;
+		Int_t fgrpid_x;
+
 		TVector3 fpos;
 
 

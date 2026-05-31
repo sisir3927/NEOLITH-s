@@ -19,6 +19,9 @@ class myGroups:public TObject{
 			fmintdc = 99999;
 			fpos = -99999;
 
+			fdifftot_l = -99999;
+			fdifftot_r = -99999;
+
 
 		}
 		~myGroups() = default;
@@ -26,7 +29,8 @@ class myGroups:public TObject{
 
 
 		void SetPos(double_t pos){fpos =pos;};
-
+		void SetdToTL(int diff){fdifftot_l = diff;}
+		void SetdToTR(int diff){fdifftot_r = diff;}
 		/*void Add(myDCHit * hit){
 
 			if(farray.GetEntriesFast()==0)
@@ -92,6 +96,14 @@ void Add(myDCHit *hit) {
     // Always update the trailing edge boundary and store the hit pointer
     fendID = hit->GetWireNum();
     farray.Add(hit);
+
+Int_t mid = fmaxtotid-fstartid;
+if(CathOk()){
+    Int_t lmaxtot = farray.At(mid-1)->GetToT();
+    Int_t rmaxtot = farray.At(mid+1)->GetToT();
+fdifftot_l = fmaxtot-lmaxtot;
+fdifftot_r = fmaxtot-rmaxtot;
+	}	
 }
 
 
@@ -99,6 +111,13 @@ void Add(myDCHit *hit) {
 
 			return farray.GetEntriesFast();
 
+		};
+
+		Bool_t IsCathOk(){
+				
+Int_t mid = fmaxtotid-fstartid;
+if(mid !=0 && mid!=farray.GetEntriesFast()-1){
+		return true;} else {return false;}		
 		};
 
 		Int_t  GetMaxToTID(){return fmaxtotid;}
@@ -120,6 +139,10 @@ void Add(myDCHit *hit) {
 		}
 
 
+		Int_t GetdToTL(){return fdifftot_l;}
+		Int_t GetdToTR(){return fdifftot_r;}
+
+
 
 	private:
 		TObjArray farray;
@@ -129,6 +152,8 @@ void Add(myDCHit *hit) {
 		Int_t fmaxtotid;
 		Int_t fmintdcid;
 		Int_t fmintdc;
+		Int_t fdiffftot_v;
+		Int_t fdiffftot_u;
 		Double_t fpos;
 
 

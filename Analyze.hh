@@ -38,6 +38,7 @@ class Analyze{
 		void PrepareForSTC();
 		void MakeSTC();
 		Double_t MakePositionCathode(myGroups* dcstripgroup, int l); //Input Should be Group
+		Double_t CalcDriftLenPot(int tdc, int l);
 		void MakeDCPosition(TClonesArray *KUgroups,TClonesArray *KVgrousp,  TVector3 *dcpos); // 
 		void MakeTracks(); //Make Tracks and plot 
 		void ReconstructSTC();
@@ -69,6 +70,8 @@ class Analyze{
 		TClonesArray *fGroupHits;
 		TClonesArray *fDCWireHits;
 		TClonesArray *fPlaHits;
+		TClonesArray *fDCevts[2];
+
 		std::vector<myDCHitPara*> fDCWireHitsPara;
 		
 		TObjArray *fDCKvHits[2];
@@ -79,7 +82,6 @@ class Analyze{
 		TObjArray *fDCKuGroups[2];
 		TObjArray *fDCKpGroups[2];
 
-		TClonesArray *fDCevts[2];
 
 
 

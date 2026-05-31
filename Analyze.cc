@@ -823,27 +823,46 @@ void Analyze::MakeDCHits(){
 		double xc = -(u[iu]+v[iv])/TMath::Sqrt(2);
 					ngrps =  fDCKpGroups[l]->GetEntriesFast();
 		if(TMath::Abs(TMath::Round(TMath::Abs(xc))%16-7)<5) continue;
-	       double xcr = TMath::Round(xc/16)*16;	
+	       double xcr = TMath::Round(xc/16)*16;
+
 		for(int ig=0; ig<ngrps; ig++ ){
 			grp = (myGroups*)fDCKpGroups[l]->At(ig);
 			Int_t mul = grp->GetSize();
 			int minid = grp->GetMinTDCID()-grp->GetStartID();
 			double potpos = grp->At(minid)->GetWirePos();
-			double an1 = potpos -8;
-			double an2 = potpos +8;
-			
-			if(TMath::Abs(an1-xcr)<1){
-			
-			
+			double anx;
+		       anx[0]	= potpos -8;
+			 anx[1] = potpos +8;
+			int tdc =  grp->GetMinTDC();
+			int kdir =0;
+			if(TMath::Abs(anx[1]-xcr)<1){
+			kdir = -1;
 			}
-		}//Loop over groups
+			
+			else if( TMath::Abs(anx[0]-xcdr<1){
+				kdir = 1;	
+					}
+			else {continue;}
+			Double_t x_drift = CalcDriftLenPot( tdc,  l);
+			Double_t x_pot = x_pot + kdir*x_drift; 
+			Double_t y = 	(u[iu]-v[iv])/TMath::Sqrt(2);
+			//Add Hits to myDCevt;
+			//Double_t z = grp->Get
+			int ndceve = fDCevts->GetEntriesFast(); 
+				myDCevt * dcevt = nullptr;
+						new ((*fDCevts)[ndceve]) myDCevt();
+			dcevt = (myDCevt*) fDCevts->At(ndceve);
+			dcevt->SetXYZ(x_pot,y,z)
+
+
+		}//Loop over groups X
 
 	
 
 		
-			}
+			} //iv
 		
-		}
+		} //iu
 
 
 
@@ -907,6 +926,17 @@ TString v =*( grp->At(maxid)->GetDir());
 				}
 			
 
+}
+////////////////////////////////////////////////////////////
+Double_t Analyze::CalcDriftLenPot(int tdc, int l){
+
+int modtdc;
+
+if(tdc<=tdcprim_kpmin[l]){modtdc =0}
+else if(tdc>=tdcprim_kpmax[l]){modtdc = tdcprim_kpmax[l] - tdcprim_kpmin[l];}
+else {modtdc = tdc-tdcprim_kpmin[l];}
+
+return stc_kp[l][modtdc];
 }
 ////////////////////////////
 
