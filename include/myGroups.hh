@@ -155,7 +155,7 @@ if(mid !=0 && mid!=farray.GetEntriesFast()-1){
 		Int_t fdiffftot_v;
 		Int_t fdiffftot_u;
 		Double_t fpos;
-
+		Double_t fdifftot_r;
 
 
 		ClassDef(myGroups,1);
