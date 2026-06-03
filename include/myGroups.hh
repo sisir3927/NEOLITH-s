@@ -97,8 +97,8 @@ void Add(myDCHit *hit) {
     fendID = hit->GetWireNum();
     farray.Add(hit);
 
-Int_t mid = fmaxtotid-fstartid;
-if(CathOk()){
+Int_t mid = fmaxtotid-fstartID;
+if(IsCathOk()){
     Int_t lmaxtot = ((myDCHit *)farray.At(mid-1))->GetToT();
     Int_t rmaxtot = ((myDCHit *)farray.At(mid+1))->GetToT();
 fdifftot_l = fmaxtot-lmaxtot;
@@ -115,7 +115,7 @@ fdifftot_r = fmaxtot-rmaxtot;
 
 		Bool_t IsCathOk(){
 				
-Int_t mid = fmaxtotid-fstartid;
+Int_t mid = fmaxtotid-fstartID;
 if(mid !=0 && mid!=farray.GetEntriesFast()-1){
 		return true;} else {return false;}		
 		};

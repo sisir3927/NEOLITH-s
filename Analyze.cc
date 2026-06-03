@@ -839,7 +839,7 @@ void Analyze::MakeDCHits(){
 			kdir = -1;
 			}
 			
-			else if( TMath::Abs(anx[0]-xcdr<1){
+			else if( TMath::Abs(anx[0]-xcdr<1)){
 				kdir = 1;	
 					}
 			else {continue;}
