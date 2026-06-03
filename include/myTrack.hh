@@ -24,7 +24,12 @@ class myTrack:public TObject{
 	void SetDC1Hit(Double_t x, Double_t y, Double_t z){fDC1HitPos->SetXYZ(x,y,z);}
 	void SetDC1Hit(TVector3* pos){fDC1HitPos = pos;}
 	void SetDC2Hit(Double_t x, Double_t y, Double_t z){fDC2HitPos->SetXYZ(x,y,z);}
-	void SetDC2Hit(TVector3* pos){fDC2HitPos = pos;}
+	void SetDC2Hit(TVector3* pos){fDC2HitPos = pos;}\
+	void SetXAngle(Double_t ang){fXang = ang;}
+	void SetYAngle(Double_t ang){fYang = ang;}
+	void SetXdrift(Double_t drift){fXdrift = drift;}
+	void SetUdrift(Double_t drift){fUdrift = drift;}
+	void SetVdrift(Double_t drift){fVdrift = drift;}
 
 	//void SetXAngle(Double_t ang){fXang = ang;}
 	//void SetYAngle(Double_t ang){fYang = ang;}
@@ -58,11 +63,11 @@ class myTrack:public TObject{
 	Double_t GetXAngle(){return fXang;}
 	Double_t GetYAngle(){return fYang;}
 	Double_t GetZAngle(){return fZang;}
-		Double_t x = fCatPos->X() - fConvPos->X();
-		Double_t y = fCatPos->Y() - fConvPos->Y();
-		Double_t z = fCatPos->Z() - fConvPos->Z();
-		return TMath::ATan2(TMath::Sqrt(x*x+y*y),z);
-	}
+
+	Double_t GetXdrift(){return fXdrift;}
+	Double_t GetUdrift(){return fUdrift;}
+	Double_t GetVdrift(){return fVdrift;}	
+
 
 
 
@@ -87,7 +92,11 @@ class myTrack:public TObject{
 
 	Double_t fXang;
 	Double_t fYang;
-	Double_t fZang;;
+	Double_t fZang;
+
+	Double_t fXdrift;
+	Double_t fUdrift;
+	Double_t fVdrift;
 
 
 
