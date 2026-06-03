@@ -14,21 +14,22 @@ class myTrack:public TObject{
 	void Clear();
 	void Clear(TVector3*  pos);
 
-	void SetConvPos(double x, double y, double z){fConvPos->SetXYZ(x,y,z);}
+	void SetConvPos(Double_t x, Double_t y, Double_t z){fConvPos->SetXYZ(x,y,z);}
 	void SetConvPos(TVector3* pos) {fConvPos =pos;}
 	void SetConID(int id){fid1 = id;}
-	void SetCatPos(double x, double y, double z){fCatPos->SetXYZ(x,y,z);}
+	void SetCatPos(Double_t x, Double_t y, Double_t z){fCatPos->SetXYZ(x,y,z);}
 	void SetCatPos(TVector3* pos) {fCatPos =pos;}
 	void SetCatID(int id){fid2 = id;}
 
-	void SetDC1Hit(double x, double y, double z){fDC1HitPos->SetXYZ(x,y,z);}
+	void SetDC1Hit(Double_t x, Double_t y, Double_t z){fDC1HitPos->SetXYZ(x,y,z);}
 	void SetDC1Hit(TVector3* pos){fDC1HitPos = pos;}
-	void SetDC2Hit(double x, double y, double z){fDC2HitPos->SetXYZ(x,y,z);}
+	void SetDC2Hit(Double_t x, Double_t y, Double_t z){fDC2HitPos->SetXYZ(x,y,z);}
 	void SetDC2Hit(TVector3* pos){fDC2HitPos = pos;}
 
-	//void SetXAngle(double ang){fXang = ang;}
-	//void SetYAngle(double ang){fYang = ang;}
+	//void SetXAngle(Double_t ang){fXang = ang;}
+	//void SetYAngle(Double_t ang){fYang = ang;}
 
+	void Calibrate();
 
 	TVector3* GetConvPos(){return fConvPos;}
 	TVector3* GetCatPos(){return fCatPos;}
@@ -38,13 +39,13 @@ class myTrack:public TObject{
 	
 
 
-	double  GetConvPos(int i) {
+	Double_t  GetConvPos(int i) {
 		if(i==0) return fConvPos->X();
 		else if(i==1) return fConvPos->Y();
 		else if(i==2) return fConvPos->Z();
 		else return 0;
 	}
-	double GetCatPos(int i) {
+	Double_t GetCatPos(int i) {
 		if(i==0) return fCatPos->X();
 		else if(i==1) return fCatPos->Y();
 		else if(i==2) return fCatPos->Z();
@@ -54,15 +55,23 @@ class myTrack:public TObject{
 	int GetCatID(){return fid2;}
 	int GetConvID(){return fid1;}
 
-	double GetXAngle(){return fXang;}
-	double GetYAngle(){return fYang;}
+	Double_t GetXAngle(){return fXang;}
+	Double_t GetYAngle(){return fYang;}
+	Double_t GetZAngle(){return fZang;}
+		Double_t x = fCatPos->X() - fConvPos->X();
+		Double_t y = fCatPos->Y() - fConvPos->Y();
+		Double_t z = fCatPos->Z() - fConvPos->Z();
+		return TMath::ATan2(TMath::Sqrt(x*x+y*y),z);
+	}
+
+
 
 
 
 
 	TVector3*  GetnpVertex(bool resolution=false);
 
-	TVector3* Extrapolate(double xang, double yang, TVector3* pos, double zint);
+	TVector3* Extrapolate(Double_t xang, Double_t yang, TVector3* pos, Double_t zint);
 
 	private:
 
@@ -71,12 +80,16 @@ class myTrack:public TObject{
 	TVector3 *fDC1HitPos;
 	TVector3 *fDC2HitPos;
 	TVector3 *fnpvertex;
+	TVector3 *ftrackvec;
 
 	int fid1;
 	int fid2;
 
-	double fXang;
-	double fYang;
+	Double_t fXang;
+	Double_t fYang;
+	Double_t fZang;;
+
+
 
 
 
