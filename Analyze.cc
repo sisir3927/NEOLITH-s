@@ -32,6 +32,9 @@ Analyze::Analyze(int nRun, bool force):
 
 		}
 
+		ftracks = new TClonesArray("myTrack",100);
+		ftracks->SetOwner(kTRUE);
+
 
 		LoadParameters("map/NEOLITHs.xml");
 		int neve =0;
@@ -75,7 +78,7 @@ Analyze::Analyze(int nRun, bool force):
 			rawevent = estore->GetRawEventObject();
 			neve = 0;
 
-			h_test= new TH1I("h_test","h_test",80,-0.5,79.5);
+			h_test= new TH1D("h_test","h_test",100,-0.5,8.5);
 			while(estore->GetNextEvent()){
 				std::cout << "\rProcessing Event: " << neve << std::flush;
 				//Initialize
@@ -83,7 +86,7 @@ Analyze::Analyze(int nRun, bool force):
 
 				Clear();
 				LoadData();
-				FormHitArrays();
+				FormHitArrays(1);
 				for(int l=0 ; l<2; l++){
 					fDCKvHits[l]->Sort();
 					fDCKuHits[l]->Sort();
@@ -92,10 +95,10 @@ Analyze::Analyze(int nRun, bool force):
 
 				MakeGroups();
 				PrepareForSTC();
-				estore->ClearData();
 				neve++;
-
 				ftree->Fill();
+				estore->ClearData();
+
 			}//estore
 			Clear();
 
@@ -103,8 +106,11 @@ Analyze::Analyze(int nRun, bool force):
 
 			ftree->Write();
 		}//force
+		fout1->Write();
 		fout1->Close();
 		delete fout1;
+
+
 		TFile *fin = new TFile (Form("root/sisir/Ana_Data_%d.root",nRun), "READ");
 		TTree *ftreein;
 		fin->GetObject("Hit_Tree",ftreein);
@@ -134,24 +140,29 @@ Analyze::Analyze(int nRun, bool force):
 		ftreein->SetBranchAddress("tof_incidence",&tof_incidence_in);
 		ftreein->SetBranchAddress("incidence_pla",&incidence_pla);
 		ftreein->SetBranchAddress("ref_tdc",&ref_tdc_in);
+TFile *fout2 =new TFile("root/test2.root","RECREATE");
 
+		BookHistograms();
 
 		for (Long64_t i=0; i<ftreein->GetEntries(); ++i) {
 			ftreein->GetEntry(i);
-
-			FormHitArrays();
+			CopyInputVariables();
+			FormHitArrays(0);
 			for(int l=0 ; l<2; l++){
 				fDCKvHits[l]->Sort();
 				fDCKuHits[l]->Sort();
 				fDCKpHits[l]->Sort();
+
+				//	std::cout<<"HITs "<<fDCKvHits[l]->GetEntriesFast()<<" "<<fDCKuHits[l]->GetEntriesFast()<<" "<<fDCKvHits[l]->GetEntriesFast()<<std::endl;
 			}
 
 			MakeGroups();
 
 			MakeDCHits();
-
+			MakeTracks();
+			Clear();
 		}
-
+ h_npvertex_basic->Draw("colz");
 		fin->Close();
 
 
@@ -224,6 +235,7 @@ void Analyze::LoadData(){
 						hit->SetWireNum(para->GetWireID());
 						hit->SetWirePos(para->GetWirePosition());
 						hit->SetWirePosz(para->GetWireZPosition());
+						//		std::cout<<para->GetWireZPosition()<<std::endl;;
 						hit->SetDir(*(para->GetWireDirection()));
 						hit->SetIsAsagi(para->GetIsAsagi());
 						hit->SetTDC(val);
@@ -275,96 +287,129 @@ void Analyze::LoadData(){
 
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
+void Analyze::CopyInputVariables() {
+	// --- 1. Copy integer vectors ---
+	if (tdc_pmt_in)        tdc_pmt        = *tdc_pmt_in;
+	if (trail_tdc_ch_in)   trail_tdc_ch   = *trail_tdc_ch_in;
+	if (qtc_pmt_in)        qtc_pmt        = *qtc_pmt_in;
+	if (qdc_pmt_in)        qdc_pmt        = *qdc_pmt_in; // This addresses your example!
+	if (tof_row_in)        tof_row        = *tof_row_in;
+	if (tof_pattern_in)    tof_pattern    = *tof_pattern_in;
+	if (ref_tdc_in)        ref_tdc        = *ref_tdc_in;
+	if (tof_sbt_pla_in)    tof_sbt_pla    = *tof_sbt_pla_in;
 
-void Analyze::FormHitArrays(){		
+	// --- 2. Copy double vectors ---
+	if (qtc_pla_in)        qtc_pla        = *qtc_pla_in;
+	if (qdc_pla_in)        qdc_pla        = *qdc_pla_in;
+	if (t_pla_in)          t_pla          = *t_pla_in;
+	if (tdiff_pla_in)      tdiff_pla      = *tdiff_pla_in;
 
-	if (tdc_ch[31]!=tdc_init) {ref_tdc[4] = tdc_ch[31];ref_trig_bool[4] = 1;
-	}
+	// --- 3. Copy boolean vectors ---
+	if (pla_bool_in)       pla_bool       = *pla_bool_in;
+	if (pmt_bool_in)       pmt_bool       = *pmt_bool_in;
+	if (row_bool_in)       row_bool       = *row_bool_in;
+	if (pattern_bool_in)   pattern_bool   = *pattern_bool_in;
+	if (ref_trig_bool_in)  ref_trig_bool  = *ref_trig_bool_in;
+
+	// --- 4. Copy standard variables (Direct assignment) ---
+	veto_bool     = veto_bool_in;
+	sbt_bool      = sbt_bool_in;
+	sbt_tdc       = sbt_tdc_in;
+	veto_tdc      = veto_tdc_in;
+	incidence_tdc = incidence_tdc_in;
+	tof_incidence = tof_incidence_in;
+	incidence_pla = incidence_pla_in;
+}
+///////////////////////////////////////////////////////////////////////////////////////////////
+void Analyze::FormHitArrays(bool force){		
+	if(force){
+		if (tdc_ch[31]!=tdc_init) {ref_tdc[4] = tdc_ch[31];ref_trig_bool[4] = 1;
+		}
 
 
-	for(int ich = 0; ich<31; ich++){
+		for(int ich = 0; ich<31; ich++){
 
-		if (tdc_ch[ich]== tdc_init || trail_tdc_ch[ich]== tdc_init) continue;
+			if (tdc_ch[ich]== tdc_init || trail_tdc_ch[ich]== tdc_init) continue;
 
-		if(ich<npmt) pmt_bool[ich] =1;
+			if(ich<npmt) pmt_bool[ich] =1;
 
-		tdc_ch[ich] -= ref_tdc[4];
-		trail_tdc_ch[ich] -= ref_tdc[4];
+			tdc_ch[ich] -= ref_tdc[4];
+			trail_tdc_ch[ich] -= ref_tdc[4];
 
-	}
+		}
 
 
-	for(int ipmt = 0 ; ipmt< npmt; ipmt++){
+		for(int ipmt = 0 ; ipmt< npmt; ipmt++){
 
-		if (!pmt_bool[ipmt]) continue;
+			if (!pmt_bool[ipmt]) continue;
 
-		tdc_pmt[ipmt] = tdc_ch[ipmt];
-		qtc_pmt[ipmt] = trail_tdc_ch[ipmt] - tdc_pmt[ipmt];
-		/*			h_t_ch[ipmt]->Fill(tdc_pmt[ipmt]);
-					h_tid->Fill(ipmt,tdc_pmt[ipmt]);
-					h_qtc_pmt[ipmt]->Fill(qtc_pmt[ipmt]);
-					h_qtcid->Fill(ipmt,qtc_pmt[ipmt]);
-					h_qdcid->Fill(ipmt,qdc_pmt[ipmt]);
-					h_qdc_pmt[ipmt]->Fill(qdc_pmt[ipmt]);
-					h_qdcorg_ch[ipmt]->Fill(qdcorg_ch[ipmt]);
+			tdc_pmt[ipmt] = tdc_ch[ipmt];
+			qtc_pmt[ipmt] = trail_tdc_ch[ipmt] - tdc_pmt[ipmt];
+			/*			h_t_ch[ipmt]->Fill(tdc_pmt[ipmt]);
+						h_tid->Fill(ipmt,tdc_pmt[ipmt]);
+						h_qtc_pmt[ipmt]->Fill(qtc_pmt[ipmt]);
+						h_qtcid->Fill(ipmt,qtc_pmt[ipmt]);
+						h_qdcid->Fill(ipmt,qdc_pmt[ipmt]);
+						h_qdc_pmt[ipmt]->Fill(qdc_pmt[ipmt]);
+						h_qdcorg_ch[ipmt]->Fill(qdcorg_ch[ipmt]);
 
 */		
 
-	}
+		}
 
 
-	for(int ipla =0; ipla<npla; ipla++){
-		if (tdc_pmt[ipla]==tdc_init|| tdc_pmt[ipla+npla]== tdc_init) continue;
-		pla_bool[ipla]=1;
-		t_pla[ipla] = 0.5*(tdc_pmt[ipla]+tdc_pmt[ipla+npla]);
-		tdiff_pla[ipla] = tdc_pmt[ipla]-tdc_pmt[ipla+npla];
-		if(qtc_pmt[ipla]>0&&qtc_pmt[ipla+npla]>0)qtc_pla[ipla]= TMath::Sqrt(qtc_pmt[ipla]*qtc_pmt[ipla+6]);
-		if(qdc_pmt[ipla]>0&&qdc_pmt[ipla+npla]>0)qdc_pla[ipla]= TMath::Sqrt(qdc_pmt[ipla]*qdc_pmt[ipla+6]);
-		/*			h_Qtdiff_pla[ipla]->Fill(tdiff_pla[ipla],qdc_pla[ipla]);
-					h_qdc_pla[ipla]->Fill(qdc_pla[ipla]);
-					h_qtc_pla[ipla]->Fill(qtc_pla[ipla]);
-					h_tdiff_pla[ipla]->Fill(tdiff_pla[ipla]);
-					h_t_pla[ipla]->Fill(t_pla[ipla]);
+		for(int ipla =0; ipla<npla; ipla++){
+			if (tdc_pmt[ipla]==tdc_init|| tdc_pmt[ipla+npla]== tdc_init) continue;
+			pla_bool[ipla]=1;
+			t_pla[ipla] = 0.5*(tdc_pmt[ipla]+tdc_pmt[ipla+npla]);
+			tdiff_pla[ipla] = tdc_pmt[ipla]-tdc_pmt[ipla+npla];
+			if(qtc_pmt[ipla]>0&&qtc_pmt[ipla+npla]>0)qtc_pla[ipla]= TMath::Sqrt(qtc_pmt[ipla]*qtc_pmt[ipla+6]);
+			if(qdc_pmt[ipla]>0&&qdc_pmt[ipla+npla]>0)qdc_pla[ipla]= TMath::Sqrt(qdc_pmt[ipla]*qdc_pmt[ipla+6]);
+			/*			h_Qtdiff_pla[ipla]->Fill(tdiff_pla[ipla],qdc_pla[ipla]);
+						h_qdc_pla[ipla]->Fill(qdc_pla[ipla]);
+						h_qtc_pla[ipla]->Fill(qtc_pla[ipla]);
+						h_tdiff_pla[ipla]->Fill(tdiff_pla[ipla]);
+						h_t_pla[ipla]->Fill(t_pla[ipla]);
 
-					if(sbt_bool){
-					h_Qtofsbt_pla[ipla]->Fill(t_pla[ipla]-sbt_tdc,qdc_pla[ipla]);
+						if(sbt_bool){
+						h_Qtofsbt_pla[ipla]->Fill(t_pla[ipla]-sbt_tdc,qdc_pla[ipla]);
 
-					h_tdifftofsbt_pla[ipla]->Fill(t_pla[ipla]-sbt_tdc,tdiff_pla[ipla]);
-					}
-					*/
+						h_tdifftofsbt_pla[ipla]->Fill(t_pla[ipla]-sbt_tdc,tdiff_pla[ipla]);
+						}
+						*/
 
-	}
+		}
 
-	for(int ipla=0; ipla<npla/2; ipla++){
+		for(int ipla=0; ipla<npla/2; ipla++){
 
-		if(t_pla[ipla]==tdc_init) continue;
+			if(t_pla[ipla]==tdc_init) continue;
 
-		if(tdc_pmt[ipla]<incidence_tdc) {incidence_tdc = tdc_pmt[ipla]; incidence_pla = ipla;}
+			if(tdc_pmt[ipla]<incidence_tdc) {incidence_tdc = tdc_pmt[ipla]; incidence_pla = ipla;}
 
-	}
-	if(sbt_bool){   tof_incidence = incidence_tdc - sbt_tdc;}
-	//			h_Qtof_in->Fill(tof_incidence,qdc_pla[incidence_pla]);}
-
-
-	for(int irow =0; irow<nrow;irow++){
-		if(t_pla[irow] != tdc_init && t_pla[irow+nrow]!=tdc_init){
-			row_bool[irow] =1;
-			tof_row[irow] = t_pla[irow+nrow]-t_pla[irow];
-			/*				h_tof_row[irow]->Fill(tof_row[irow]);
-							h_Q1tof_row[irow]->Fill(tof_row[irow],qdc_pla[irow]);
-							h_Q2tof_row[irow]->Fill(tof_row[irow],qdc_pla[irow+nrow]);
-							h_Qsumtof_row[irow]->Fill(tof_row[irow],qdc_pla[irow+nrow]+qdc_pla[irow]);
-							*/			}
-
-			for(int jrow = 0; jrow<nrow;jrow++){
-
-				//      tof_pattern[];
-
-			}
-
-	}
+		}
+		if(sbt_bool){   tof_incidence = incidence_tdc - sbt_tdc;}
+		//			h_Qtof_in->Fill(tof_incidence,qdc_pla[incidence_pla]);}
 
 
+		for(int irow =0; irow<nrow;irow++){
+			if(t_pla[irow] != tdc_init && t_pla[irow+nrow]!=tdc_init){
+				row_bool[irow] =1;
+				tof_row[irow] = t_pla[irow+nrow]-t_pla[irow];
+				/*				h_tof_row[irow]->Fill(tof_row[irow]);
+								h_Q1tof_row[irow]->Fill(tof_row[irow],qdc_pla[irow]);
+								h_Q2tof_row[irow]->Fill(tof_row[irow],qdc_pla[irow+nrow]);
+								h_Qsumtof_row[irow]->Fill(tof_row[irow],qdc_pla[irow+nrow]+qdc_pla[irow]);
+								*/			}
+
+				for(int jrow = 0; jrow<nrow;jrow++){
+
+					//      tof_pattern[];
+
+				}
+
+		}
+
+}//Force
 
 //Forming DC Hits
 
@@ -374,9 +419,13 @@ for (Int_t i = 0; i < nDCHits; i++) {
 	myDCHit *hit = (myDCHit*)fDCWireHits->At(i);
 	int geo_t = fDCWireHitsPara[i]->GetGeo()-21;
 	if(!ref_trig_bool[geo_t]) continue;
-
-	hit->SetTDC(hit->GetTDC()-ref_tdc[geo_t]);
-	hit->SetTrailTDC(hit->GetTrailTDC()-ref_tdc[geo_t]);
+	if(force){
+		hit->SetTDC(hit->GetTDC()-ref_tdc[geo_t]);
+		hit->SetTrailTDC(hit->GetTrailTDC()-ref_tdc[geo_t]);
+	}else {
+		hit->SetTDC(hit->GetTDC());
+		hit->SetTrailTDC(hit->GetTrailTDC());
+	}
 
 	if (hit->GetDetName()->Contains("s1")) {
 
@@ -444,18 +493,28 @@ void Analyze::MakeGroups(){
 
 			int ngrps = fDCKvGroups[l]->GetEntriesFast();
 
-			if (ngrps == 0 || TMath::Abs(hit->GetWireNum() - grp->GetEndID()) >= 2) {
+			if (ngrps == 0 ||!grp) {
 
 				grp = new myGroups(); 
 				fDCKvGroups[l]->Add(grp); 
 
 				grp->Add(hit);
-			} 
+			}
+			else if(TMath::Abs(hit->GetWireNum() - grp->GetEndID()) >= 2) {
+				grp = new myGroups(); 
+				fDCKvGroups[l]->Add(grp); 
+
+				grp->Add(hit);
+
+
+			}	
 			else {
 				grp->Add(hit);
 			}
 		}
 		//Kv Grouping Complete
+
+		grp =nullptr;
 
 		for (Int_t ihit = 0; ihit < fDCKuHits[l]->GetEntriesFast(); ihit++) {
 			myDCHit *hit = (myDCHit *) fDCKuHits[l]->At(ihit);
@@ -463,31 +522,50 @@ void Analyze::MakeGroups(){
 
 			int ngrps = fDCKuGroups[l]->GetEntriesFast();
 
-			if (ngrps == 0 || TMath::Abs(hit->GetWireNum() - grp->GetEndID()) >= 2) {
+			if (ngrps == 0|| !grp) {
 
 				grp = new myGroups(); 
 				fDCKuGroups[l]->Add(grp); 
 
 				grp->Add(hit);
-			} 
+			}
+			else if(TMath::Abs(hit->GetWireNum() - grp->GetEndID()) >= 2) {
+				grp = new myGroups(); 
+				fDCKuGroups[l]->Add(grp); 
+
+				grp->Add(hit);
+
+
+			}	
+
 			else {
 				grp->Add(hit);
 			}
 		}	//Ku Grouping Complete
 
+		grp = nullptr;
 		for (Int_t ihit = 0; ihit < fDCKpHits[l]->GetEntriesFast(); ihit++) {
 			myDCHit *hit = (myDCHit *) fDCKpHits[l]->At(ihit);
 			if (!hit) continue;
 
 			int ngrps = fDCKpGroups[l]->GetEntriesFast();
 
-			if (ngrps == 0 || TMath::Abs(hit->GetWireNum() - grp->GetEndID()) >= 2) {
+			if (ngrps == 0 || !grp) {
 
 				grp = new myGroups(); 
 				fDCKpGroups[l]->Add(grp); 
 
 				grp->Add(hit);
-			} 
+			} 	
+			else if(TMath::Abs(hit->GetWireNum() - grp->GetEndID()) >= 2) {
+				grp = new myGroups(); 
+				fDCKpGroups[l]->Add(grp); 
+
+				grp->Add(hit);
+
+
+			}	
+
 			else {
 				grp->Add(hit);
 			}
@@ -495,6 +573,7 @@ void Analyze::MakeGroups(){
 
 
 
+		//	std::cout<<fDCKpGroups[l]->GetEntriesFast()<<" "<<fDCKvGroups[l]->GetEntriesFast()<<" "<<fDCKuGroups[l]->GetEntriesFast()<<std::endl;	
 
 
 	}//2 Layers
@@ -766,7 +845,7 @@ void Analyze::MakeDCHits(){
 	Int_t mul;
 	std::vector<int> vid;//grooupid
 	std::vector<int> uid;
-	std::vector<int xid;//hitid
+	std::vector<int> xid;//hitid
 	std::vector<double> v;
 	std::vector<double> u;
 	std::vector<double> x;
@@ -784,12 +863,12 @@ void Analyze::MakeDCHits(){
 			grp = (myGroups*) fDCKvGroups[l]->At(ig);
 			mul = grp->GetSize();
 			if (mul>=3){
-			
+
 				int maxid = grp->GetMaxToTID()-grp->GetStartID();
 				if(maxid==0 || maxid == mul-1) continue;
 
-				v.push(MakePositionCathode(grp,l));
-				vid.push(ig);
+				v.push_back(MakePositionCathode(grp,l));
+				vid.push_back(ig);
 			}
 
 		}//Kv Grousp	
@@ -802,12 +881,12 @@ void Analyze::MakeDCHits(){
 			grp = (myGroups*) fDCKuGroups[l]->At(ig);
 			mul = grp->GetSize();
 			if (mul>=3){
-			
+
 				int maxid = grp->GetMaxToTID()-grp->GetStartID();
 				if(maxid==0 || maxid == mul-1) continue;
 
-				u.push(MakePositionCathode(grp,l));
-				uid.push(ig);
+				u.push_back(MakePositionCathode(grp,l));
+				uid.push_back(ig);
 			}
 
 		}//Ku Grousp	
@@ -815,53 +894,52 @@ void Analyze::MakeDCHits(){
 
 
 		for (int iu=0; iu<u.size();iu++){
-		
-		
-		for(int iv =0; iv<v.size(); iv++){
-		
-		
-		double xc = -(u[iu]+v[iv])/TMath::Sqrt(2);
-					ngrps =  fDCKpGroups[l]->GetEntriesFast();
-		if(TMath::Abs(TMath::Round(TMath::Abs(xc))%16-7)<5) continue;
-	       double xcr = TMath::Round(xc/16)*16;
 
-		for(int ig=0; ig<ngrps; ig++ ){
-			grp = (myGroups*)fDCKpGroups[l]->At(ig);
-			Int_t mul = grp->GetSize();
-			int minid = grp->GetMinTDCID()-grp->GetStartID();
-			double potpos = grp->At(minid)->GetWirePos();
-			double anx;
-		       anx[0]	= potpos -8;
-			 anx[1] = potpos +8;
-			int tdc =  grp->GetMinTDC();
-			int kdir =0;
-			if(TMath::Abs(anx[1]-xcr)<1){
-			kdir = -1;
-			}
-			
-			else if( TMath::Abs(anx[0]-xcdr<1)){
-				kdir = 1;	
+
+			for(int iv =0; iv<v.size(); iv++){
+
+
+				double xc = -(u[iu]+v[iv])/TMath::Sqrt(2);
+				ngrps =  fDCKpGroups[l]->GetEntriesFast();
+				if(TMath::Abs(static_cast<int>(std::round(TMath::Abs(xc)))%16-7)<5) continue;
+				double xcr = std::round(xc/16)*16;
+
+				for(int ig=0; ig<ngrps; ig++ ){
+					grp = (myGroups*)fDCKpGroups[l]->At(ig);
+					Int_t mul = grp->GetSize();
+					int minid = grp->GetMinTDCID()-grp->GetStartID();
+					double potpos = grp->At(minid)->GetWirePos();
+					double anx[2];
+					anx[0]	= potpos -8;
+					anx[1] = potpos +8;
+					int tdc =  grp->GetMinTDC();
+					int kdir =0;
+					if(TMath::Abs(anx[1]-xcr)<1){
+						kdir = -1;
 					}
-			else {continue;}
-			Double_t x_drift = CalcDriftLenPot( tdc,  l);
-			Double_t x_pot = x_pot + kdir*x_drift; 
-			Double_t y = 	(u[iu]-v[iv])/TMath::Sqrt(2);
-			//Add Hits to myDCevt;
-			//Double_t z = grp->Get
-			int ndceve = fDCevts->GetEntriesFast(); 
-				myDCevt * dcevt = nullptr;
-						new ((*fDCevts)[ndceve]) myDCevt();
-			dcevt = (myDCevt*) fDCevts->At(ndceve);
-			dcevt->SetXYZ(x_pot,y,z)
+
+					else if( TMath::Abs(anx[0]-xcr<1)){
+						kdir = 1;	
+					}
+					else {continue;}
+					Double_t x_drift = CalcDriftLenPot( tdc,  l);
+					Double_t x_pot = potpos + kdir*x_drift; 
+					Double_t y = 	(u[iu]-v[iv])/TMath::Sqrt(2);
+					//Add Hits to myDCevt;
+					Double_t z = grp->GetZ();
+					int ndceve = fDCevts[l]->GetEntriesFast(); 
+					myDCevt * dcevt = nullptr;
+					new ((*fDCevts[l])[ndceve]) myDCevt();
+					dcevt = (myDCevt*) fDCevts[l]->At(ndceve);
+					dcevt->SetPos(x_pot,y,z);
+
+				}//Loop over groups X
 
 
-		}//Loop over groups X
 
-	
 
-		
 			} //iv
-		
+
 		} //iu
 
 
@@ -877,66 +955,66 @@ void Analyze::MakeDCHits(){
 
 Double_t Analyze::MakePositionCathode(myGroups* grp,int l){
 
-				int maxid = grp->GetMaxToTID()-grp->GetStartID();
-				int maxtot  =grp->GetMaxToT();
-				int maxid_l = maxid- 1;
-				int maxid_r = maxid- 1;
-				int maxid_ltot= grp->At(maxid_l)->GetToT();
-				int maxid_rtot= grp->At(maxid_r)->GetToT();
-				bool Asagi = grp->At(maxid)->IsAsagi();
-			 	int dtot_l = maxtot-maxid_ltot;
-			 	int dtot_r = maxtot-maxid_rtot;
-double pos;
-double strippos = grp->At(maxid)->GetWirePos();
+	int maxid = grp->GetMaxToTID()-grp->GetStartID();
+	int maxtot  =grp->GetMaxToT();
+	int maxid_l = maxid- 1;
+	int maxid_r = maxid- 1;
+	int maxid_ltot= grp->At(maxid_l)->GetToT();
+	int maxid_rtot= grp->At(maxid_r)->GetToT();
+	bool Asagi = grp->At(maxid)->IsAsagi();
+	int dtot_l = maxtot-maxid_ltot;
+	int dtot_r = maxtot-maxid_rtot;
+	double pos;
+	double strippos = grp->At(maxid)->GetWirePos();
 
-TString v =*( grp->At(maxid)->GetDir());
-				if(v == 'v'){
+	TString v =*( grp->At(maxid)->GetDir());
+	if(v == 'v'){
 
-				if(!Asagi){		
-					if(dtot_l>difftot_kvmax_gnd[l]) dtot_l = difftot_kvmax_gnd[l];
-					pos = strippos + stc_kv_l_g[l][dtot_l];
-					if(dtot_r>difftot_kvmax_gnd[l]) dtot_r = difftot_kvmax_gnd[l];
-					pos = strippos + stc_kv_r_g[l][dtot_r];
-				}else{
-						if(dtot_l>difftot_kvmax_asa[l]) dtot_l = difftot_kvmax_asa[l];
-					pos = strippos + stc_kv_l_a[l][dtot_l];
-					if(dtot_r>difftot_kvmax_asa[l]) dtot_r = difftot_kvmax_asa[l];
-					pos = strippos + stc_kv_r_a[l][dtot_r];
-				
-				}
+		if(!Asagi){		
+			if(dtot_l>difftot_kvmax_gnd[l]) dtot_l = difftot_kvmax_gnd[l];
+			pos = strippos + stc_kv_l_g[l][dtot_l];
+			if(dtot_r>difftot_kvmax_gnd[l]) dtot_r = difftot_kvmax_gnd[l];
+			pos = strippos + stc_kv_r_g[l][dtot_r];
+		}else{
+			if(dtot_l>difftot_kvmax_asa[l]) dtot_l = difftot_kvmax_asa[l];
+			pos = strippos + stc_kv_l_a[l][dtot_l];
+			if(dtot_r>difftot_kvmax_asa[l]) dtot_r = difftot_kvmax_asa[l];
+			pos = strippos + stc_kv_r_a[l][dtot_r];
+
+		}
 
 
-				} else if (v== 'u'){
-				
-							if(!Asagi){		
-					if(dtot_l>difftot_kumax_gnd[l]) dtot_l = difftot_kumax_gnd[l];
-					pos = strippos + stc_ku_l_g[l][dtot_l];
-					if(dtot_r>difftot_kumax_gnd[l]) dtot_r = difftot_kumax_gnd[l];
-					pos = strippos + stc_ku_r_g[l][dtot_r];
-				}else{
-						if(dtot_l>difftot_kumax_asa[l]) dtot_l = difftot_kumax_asa[l];
-					pos = strippos + stc_ku_l_a[l][dtot_l];
-					if(dtot_r>difftot_kumax_asa[l]) dtot_r = difftot_kumax_asa[l];
-					pos = strippos + stc_ku_r_a[l][dtot_r];
-				
-				}
+	} else if (v== 'u'){
 
-	
-				
-				}
-			
+		if(!Asagi){		
+			if(dtot_l>difftot_kumax_gnd[l]) dtot_l = difftot_kumax_gnd[l];
+			pos = strippos + stc_ku_l_g[l][dtot_l];
+			if(dtot_r>difftot_kumax_gnd[l]) dtot_r = difftot_kumax_gnd[l];
+			pos = strippos + stc_ku_r_g[l][dtot_r];
+		}else{
+			if(dtot_l>difftot_kumax_asa[l]) dtot_l = difftot_kumax_asa[l];
+			pos = strippos + stc_ku_l_a[l][dtot_l];
+			if(dtot_r>difftot_kumax_asa[l]) dtot_r = difftot_kumax_asa[l];
+			pos = strippos + stc_ku_r_a[l][dtot_r];
+
+		}
+
+
+
+	}
+
+	return pos;
+
 
 }
 ////////////////////////////////////////////////////////////
 Double_t Analyze::CalcDriftLenPot(int tdc, int l){
 
-int modtdc;
-
-if(tdc<=tdcprim_kpmin[l]){modtdc =0}
-else if(tdc>=tdcprim_kpmax[l]){modtdc = tdcprim_kpmax[l] - tdcprim_kpmin[l];}
-else {modtdc = tdc-tdcprim_kpmin[l];}
-
-return stc_kp[l][modtdc];
+	int modtdc;
+	if(tdc<=tdcprim_kpmin[l]){modtdc =0;}
+	else if(tdc>=tdcprim_kpmax[l]){modtdc = tdcprim_kpmax[l] - tdcprim_kpmin[l];}
+	else {modtdc = tdc-tdcprim_kpmin[l];}
+	return stc_kp[l][modtdc];
 }
 ////////////////////////////
 
@@ -948,12 +1026,62 @@ void Analyze::MakeDCPosition(TClonesArray *KUgroups,TClonesArray *KVgrousp,  TVe
 /////////////////////////////
 void Analyze::MakeTracks(){
 
+	myTrack *tr = nullptr;
+
+	int n_dceve[2]={fDCevts[0]->GetEntriesFast(),fDCevts[1]->GetEntriesFast()}; 
+
+	TVector3 *fl1pos = new TVector3(0,0,-124.95);
+	TVector3 *fl2pos = new TVector3(0,0,124.95);
+
+	for (int ieve1 = 0; ieve1<n_dceve[0];ieve1++){
+		if (n_dceve[1] ==0) break;
+		myTrack* track = (myTrack*)ftracks->ConstructedAt(ftracks->GetEntriesFast());
+		track->SetDC1evt((myDCevt*)fDCevts[0]->At(ieve1));
+		track->SetConvPos(fl1pos);
+		track->SetCatPos(fl2pos);
+		for (int ieve2 = 0; ieve2< n_dceve[1]; ieve2++){
+
+			track->SetDC2evt((myDCevt*)fDCevts[1]->At(ieve2));	
+
+			track->Calibrate();
+
+			bool fconv =false;
+			bool fcat = false;	
 
 
+			for (int ipla =0 ; ipla<3; ipla ++){
+				if (! pla_bool[ipla]) continue;
+				if (TMath::Abs(track->GetnpVertex().Y()-y_pla[ipla])<=50){
+					fconv = true;
+					track->SetConvPos(0,y_pla[ipla],-124.95);
+					break;
+				}
+
+			}// Layer 1 Plastic Hit Check
+
+			for (int ipla =3 ; ipla<6; ipla ++){
+				if (! pla_bool[ipla]) continue;
+				if (TMath::Abs(track->GetpCatch().Y()-y_pla[ipla])<=50){
+					fcat = true;
+					track->SetCatPos(0,y_pla[ipla],124.95);
+					break;
+				}
+
+			}// Layer 2 plastic hit check
+			h_npvertex_basic->Fill(track->GetnpVertex().X(), track->GetnpVertex().Y());
+			if(!(fconv && fcat)) {
+				if(ftracks->GetEntriesFast()>0)
+					ftracks->RemoveAt(ftracks->GetEntriesFast()-1);
+			}
+
+
+		}//NEOLITH-s2 evts
+
+
+	}// NEOLITH-s1 evts	
 
 
 }
-
 ///////////////////////////////
 
 void Analyze::ReconstructSTC(){
@@ -1116,9 +1244,11 @@ void Analyze::Clear(){
 		fDCKuGroups[l]->Clear();
 		fDCKpGroups[l]->Clear();
 
+		fDCevts[l]->Clear();
+
 	}
 
-
+	ftracks->Clear();
 
 
 
@@ -1192,7 +1322,7 @@ void Analyze::BookHistograms(){
 		h_driflen_kv_l_as[l] = new TH1D(Form("h_driflen_kv_l_as%d",l+1),Form("Left Drift Length Distribution Kv Asagi NEOLITH-s %d",l+1),100,0,5 );
 		h_driflen_kv_l_gs[l] = new TH1D(Form("h_driflen_kv_l_gs%d",l+1),Form("Left Drift Length Distribution Kv GND NEOLITH-s %d",l+1),100,0,5 );
 		h_driflen_kv_r_as[l] = new TH1D(Form("h_driflen_kv_r_as%d",l+1),Form("Right Drift Length Distribution Kv Asagi NEOLITH-s %d",l+1),100,0,5 );
-		h_driflen_kv_r_gs[l] = new TH1D(Form("h_driflen_kv_l_as%d",l+1),Form("Right Drift Length Distribution Kv GND NEOLITH-s %d",l+1),100,0,5 );
+		h_driflen_kv_r_gs[l] = new TH1D(Form("h_driflen_kv_r_gs%d",l+1),Form("Right Drift Length Distribution Kv GND NEOLITH-s %d",l+1),100,0,5 );
 		h_driflen_ku_l_as[l] = new TH1D(Form("h_driflen_ku_l_as%d",l+1),Form("Left Drift Length Distribution Ku Asagi NEOLITH-s %d",l+1),100,0,5 );
 		h_driflen_ku_l_gs[l] = new TH1D(Form("h_driflen_ku_l_gs%d",l+1),Form("Left Drift Length Distribution Ku GND NEOLITH-s %d",l+1),100,0,5 );
 		h_driflen_ku_r_as[l] = new TH1D(Form("h_driflen_ku_r_as%d",l+1),Form("Right Drift Length Distribution Ku Asagi NEOLITH-s %d",l+1),100,0,5 );
@@ -1201,9 +1331,9 @@ void Analyze::BookHistograms(){
 
 
 
-
 	}
 
+	h_npvertex_basic = new TH2D("h_npvertex_basic","N-P Vertex at Middle of Layer1 before any correction",250,-300,300,250,-300,300);
 
 }
 

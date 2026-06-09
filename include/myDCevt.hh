@@ -43,7 +43,7 @@ class myDCevt:public TObject{
 	Int_t GetUGrpID(){return fgrpid_u;}
 	Int_t GetXGrpID(){return fgrpid_x;}
 
-	TVector3 GetPos(){return fpos;}
+	TVector3& GetPos(){return fpos;}
 	Double_t GetX(){return fx;}
 	Double_t GetY(){return fy;}
 	Double_t GetZ(){return fz;}

@@ -8,7 +8,7 @@ class myDCHitPara:public TObject{
 	public:
 		myDCHitPara(){};
 		myDCHitPara(int i, TString n, Int_t wid, Double_t wp, Double_t wz,TString dr, Bool_t asagi){
-		id =i; detname =n; wireid = wid; wirepos = wp;  dir =dr; fasagi = asagi;}
+		id =i; detname =n; wireid = wid; wirepos = wp; wirez = wz; dir =dr; fasagi = asagi;}
 		~myDCHitPara(){};
 
 		void SetParameters(Int_t i, TString n, Int_t wid, Double_t wp, Double_t wz, TString dr, Bool_t asagi){

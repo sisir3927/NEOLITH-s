@@ -3,7 +3,7 @@
 
 #include "TVector3.h"
 #include "TMath.h"
-
+#include "myDCevt.hh"
 class myTrack:public TObject{
 
 	public:
@@ -30,7 +30,10 @@ class myTrack:public TObject{
 	void SetXdrift(Double_t drift){fXdrift = drift;}
 	void SetUdrift(Double_t drift){fUdrift = drift;}
 	void SetVdrift(Double_t drift){fVdrift = drift;}
-
+	
+	void SetDC1evt(myDCevt *eve){fdceve1 = eve;}
+	void SetDC2evt(myDCevt *eve){fdceve2 = eve;}
+	
 	//void SetXAngle(Double_t ang){fXang = ang;}
 	//void SetYAngle(Double_t ang){fYang = ang;}
 
@@ -39,9 +42,11 @@ class myTrack:public TObject{
 	TVector3* GetConvPos(){return fConvPos;}
 	TVector3* GetCatPos(){return fCatPos;}
 
-	TVector3* GetDC1Hit(){return fDC1HitPos;}
-	TVector3* GetDC2Hit(){return fDC2HitPos;}
-	
+	TVector3* GetDC1HitPos(){return fDC1HitPos;}
+	TVector3* GetDC2HitPos(){return fDC2HitPos;}
+
+	myDCevt* GetDC1evt(){return fdceve1;}	
+	myDCevt* GetDC2evt(){return fdceve1;}	
 
 
 	Double_t  GetConvPos(int i) {
@@ -66,7 +71,11 @@ class myTrack:public TObject{
 
 	Double_t GetXdrift(){return fXdrift;}
 	Double_t GetUdrift(){return fUdrift;}
-	Double_t GetVdrift(){return fVdrift;}	
+	Double_t GetVdrift(){return fVdrift;}
+
+
+	TVector3 GetnpVertex();	
+	TVector3 GetpCatch(){return fpcatch;}	
 
 
 
@@ -74,9 +83,8 @@ class myTrack:public TObject{
 
 
 
-	TVector3*  GetnpVertex(bool resolution=false);
 
-	TVector3* Extrapolate(Double_t xang, Double_t yang, TVector3* pos, Double_t zint);
+	TVector3 Extrapolate(Double_t xang, Double_t yang, TVector3* pos, Double_t zint);
 
 	private:
 
@@ -84,8 +92,12 @@ class myTrack:public TObject{
 	TVector3 *fCatPos;
 	TVector3 *fDC1HitPos;
 	TVector3 *fDC2HitPos;
-	TVector3 *fnpvertex;
+	TVector3 fnpvertex;
+	TVector3 fpcatch;
 	TVector3 *ftrackvec;
+
+	myDCevt* fdceve1;
+	myDCevt* fdceve2;
 
 	int fid1;
 	int fid2;

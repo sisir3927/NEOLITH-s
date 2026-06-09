@@ -8,6 +8,7 @@
 #include "TArtStoreManager.hh"
 #include "TH1.h"
 #include "TH2.h"
+#include "TFile.h"
 #include "TVector3.h"
 #include "TClonesArray.h"
 #include "myTrack.hh"
@@ -32,7 +33,7 @@ class Analyze{
 
 		void LoadData();
 
-		void FormHitArrays();
+		void FormHitArrays(bool force);
 		void MakeDCHits();  // Group Wires, Create STC and Make Position
 		void MakeGroups(); //Group the strips/wires in MakeDCHits 
 		void PrepareForSTC();
@@ -50,6 +51,8 @@ class Analyze{
 
 		const myDCHitPara* FindDCHitPara(TArtRIDFMap *rmap) const;
 		bool LoadParameters(const char *filexml);
+
+		void CopyInputVariables();
 
 
 		myDCHit *FindDCHit(Int_t id);
@@ -201,6 +204,8 @@ class Analyze{
 
 		const int niter_stc = 50;
 
+		const std::vector<double> y_pla={100,0,-100,100,0,-100};
+		const std::vector<double> z_pla={-124.95,-124.95,-124.95,124.95,124.95,124.95};
 
 		
 		TH1* h_test;
@@ -244,8 +249,9 @@ class Analyze{
 		TH1* h_driflen_kv_l_gs[2];
 		TH1* h_driflen_kv_r_as[2];
 		TH1* h_driflen_kv_r_gs[2];
+	
+	 	TH1 *h_npvertex_basic;	
 		
-
 		TFile* f;
 		TTree* tree;
 };

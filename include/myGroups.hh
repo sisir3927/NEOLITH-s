@@ -18,7 +18,7 @@ class myGroups:public TObject{
 			fmintdcid = -1;
 			fmintdc = 99999;
 			fpos = -99999;
-
+			fz = -99999;
 			fdifftot_l = -99999;
 			fdifftot_r = -99999;
 
@@ -62,7 +62,7 @@ class myGroups:public TObject{
 
 void Add(myDCHit *hit) {
     if (!hit) return; // Basic pointer safety check
-
+	 fz = hit->GetWirePosz();
     // If this is the very first hit in the cluster group
     if (farray.GetEntriesFast() == 0) {
         fstartID = hit->GetWireNum();
@@ -141,7 +141,8 @@ if(mid !=0 && mid!=farray.GetEntriesFast()-1){
 
 		Int_t GetdToTL(){return fdifftot_l;}
 		Int_t GetdToTR(){return fdifftot_r;}
-
+	
+		Double_t GetZ(){return fz;}
 
 
 	private:
@@ -157,7 +158,7 @@ if(mid !=0 && mid!=farray.GetEntriesFast()-1){
 		Double_t fpos;
 		Double_t fdifftot_l;
 		Double_t fdifftot_r;
-
+		Double_t fz;
 
 		ClassDef(myGroups,1);
 
