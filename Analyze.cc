@@ -914,16 +914,18 @@ void Analyze::MakeDCHits(){
 					anx[1] = potpos +8;
 					int tdc =  grp->GetMinTDC();
 					int kdir =0;
+					Double_t x_drift = CalcDriftLenPot( tdc,  l);
+					Double_t x_pot = -99999;
 					if(TMath::Abs(anx[1]-xcr)<1){
 						kdir = -1;
+						x_pot = anx[1] - x_drift;
 					}
 
 					else if( TMath::Abs(anx[0]-xcr<1)){
 						kdir = 1;	
+						x_pot = anx[1] + x_drift;
 					}
 					else {continue;}
-					Double_t x_drift = CalcDriftLenPot( tdc,  l);
-					Double_t x_pot = potpos + kdir*x_drift; 
 					Double_t y = 	(u[iu]-v[iv])/TMath::Sqrt(2);
 					//Add Hits to myDCevt;
 					Double_t z = grp->GetZ();
