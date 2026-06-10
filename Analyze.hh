@@ -252,6 +252,16 @@ class Analyze{
 	
 	 	TH1 *h_npvertex_basic;	
 		
+		TH1* h_kp_tdcprim_corr_s[2];
+		TH1* h_kv_dtot_l_corr_gs[2];
+		TH1* h_ku_dtot_l_corr_gs[2];
+		TH1* h_kv_dtot_r_corr_gs[2];
+		TH1* h_ku_dtot_r_corr_gs[2];
+		TH1* h_kv_dtot_l_corr_as[2];
+		TH1* h_ku_dtot_l_corr_as[2];
+		TH1* h_kv_dtot_r_corr_as[2];
+		TH1* h_ku_dtot_r_corr_as[2];
+
 		TFile* f;
 		TTree* tree;
 };
