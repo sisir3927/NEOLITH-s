@@ -42,12 +42,14 @@ class Analyze{
 		Double_t CalcDriftLenPot(int tdc, int l);
 		void MakeDCPosition(TClonesArray *KUgroups,TClonesArray *KVgrousp,  TVector3 *dcpos); // 
 		void MakeTracks(); //Make Tracks and plot 
-		void ReconstructSTC();
+		void ReconstructSTC(int niter);
 		void ReconstructTracks();
-		
+
 		void BookHistograms();
 		void Clear();
 		void Clearin();
+		void ClearSTC();
+		void ClearSTCHist();
 
 		const myDCHitPara* FindDCHitPara(TArtRIDFMap *rmap) const;
 		bool LoadParameters(const char *filexml);
@@ -65,10 +67,11 @@ class Analyze{
 
 
 		TArtEventStore *estore;
-        	TArtRawEventObject *rawevent;
+		TArtRawEventObject *rawevent;
 
 		int fRunNum;
 		TClonesArray *ftracks;
+		TClonesArray *ftracks_cum;
 		TClonesArray *fDCHits;
 		TClonesArray *fGroupHits;
 		TClonesArray *fDCWireHits;
@@ -76,7 +79,7 @@ class Analyze{
 		TClonesArray *fDCevts[2];
 
 		std::vector<myDCHitPara*> fDCWireHitsPara;
-		
+
 		TObjArray *fDCKvHits[2];
 		TObjArray *fDCKuHits[2];
 		TObjArray *fDCKpHits[2];
@@ -123,35 +126,35 @@ class Analyze{
 
 
 
-               const std::vector<int>* qdcorg_ch_in = nullptr;
-                const  std::vector<int>* qdc_pmt_in= nullptr;
-                 const std::vector<int>* tdc_ch_in= nullptr;
-                 const std::vector<int>* tdc_pmt_in= nullptr;
-                 const std::vector<int>* trail_tdc_ch_in= nullptr;
-                 const std::vector<int>* qtc_pmt_in= nullptr;
+		const std::vector<int>* qdcorg_ch_in = nullptr;
+		const  std::vector<int>* qdc_pmt_in= nullptr;
+		const std::vector<int>* tdc_ch_in= nullptr;
+		const std::vector<int>* tdc_pmt_in= nullptr;
+		const std::vector<int>* trail_tdc_ch_in= nullptr;
+		const std::vector<int>* qtc_pmt_in= nullptr;
 
-                 const std::vector<double>* qtc_pla_in= nullptr;
-                 const std::vector<double>* qdc_pla_in= nullptr;
-                 const std::vector<double>* t_pla_in= nullptr;
-                const  std::vector<double>* tdiff_pla_in= nullptr;
+		const std::vector<double>* qtc_pla_in= nullptr;
+		const std::vector<double>* qdc_pla_in= nullptr;
+		const std::vector<double>* t_pla_in= nullptr;
+		const  std::vector<double>* tdiff_pla_in= nullptr;
 
-                 const std::vector<int>* tof_row_in= nullptr;
-                const  std::vector<int>* tof_pattern_in= nullptr;
+		const std::vector<int>* tof_row_in= nullptr;
+		const  std::vector<int>* tof_pattern_in= nullptr;
 
-                 const std::vector<bool>* pla_bool_in= nullptr ;
-                 const std::vector<bool>* pmt_bool_in= nullptr;
-                 const std::vector<bool>* row_bool_in= nullptr;
-                 const std::vector<bool>* pattern_bool_in= nullptr;
-                 const std::vector<bool>* ref_trig_bool_in= nullptr;
-                bool veto_bool_in;
-                bool sbt_bool_in;
-                 const std::vector<int>* ref_tdc_in= nullptr;
-                int sbt_tdc_in;
-                int veto_tdc_in;
-                int incidence_tdc_in;
-                int tof_incidence_in;
-                const  std::vector<int>* tof_sbt_pla_in= nullptr;
-                int incidence_pla_in;
+		const std::vector<bool>* pla_bool_in= nullptr ;
+		const std::vector<bool>* pmt_bool_in= nullptr;
+		const std::vector<bool>* row_bool_in= nullptr;
+		const std::vector<bool>* pattern_bool_in= nullptr;
+		const std::vector<bool>* ref_trig_bool_in= nullptr;
+		bool veto_bool_in;
+		bool sbt_bool_in;
+		const std::vector<int>* ref_tdc_in= nullptr;
+		int sbt_tdc_in;
+		int veto_tdc_in;
+		int incidence_tdc_in;
+		int tof_incidence_in;
+		const  std::vector<int>* tof_sbt_pla_in= nullptr;
+		int incidence_pla_in;
 
 
 
@@ -191,23 +194,33 @@ class Analyze{
 		static constexpr int tdcprim_kpmax [2]= {00,0};
 		static constexpr int tdcprim_kpmin [2]= {-2600,-2600};
 
-		double stc_kv_l_a[2][difftot_kvmax_asa[0]+1];
-		double stc_kv_l_g[2][difftot_kvmax_gnd[0]+1];;
-		double stc_ku_l_a[2][difftot_kumax_asa[0]+1];;
-		double stc_ku_l_g[2][difftot_kumax_gnd[0]+1];;
-		double stc_kv_r_a[2][difftot_kvmax_asa[0]+1];;
-		double stc_kv_r_g[2][difftot_kvmax_gnd[0]+1];;
-		double stc_ku_r_a[2][difftot_kumax_asa[0]+1];;
-		double stc_ku_r_g[2][difftot_kumax_gnd[0]+1];;
-		double stc_kp[2][tdcprim_kpmax[0]-tdcprim_kpmin[0]+1];
-		
+		/*double stc_kv_l_a[2][difftot_kvmax_asa[0]+1];
+		  double stc_kv_l_g[2][difftot_kvmax_gnd[0]+1];;
+		  double stc_ku_l_a[2][difftot_kumax_asa[0]+1];;
+		  double stc_ku_l_g[2][difftot_kumax_gnd[0]+1];;
+		  double stc_kv_r_a[2][difftot_kvmax_asa[0]+1];;
+		  double stc_kv_r_g[2][difftot_kvmax_gnd[0]+1];;
+		  double stc_ku_r_a[2][difftot_kumax_asa[0]+1];;
+		  double stc_ku_r_g[2][difftot_kumax_gnd[0]+1];;
+		  double stc_kp[2][tdcprim_kpmax[0]-tdcprim_kpmin[0]+1];
+		  */
+		std::vector<std::vector<double>> stc_kv_l_a{2, std::vector<double>(difftot_kvmax_asa[0] + 1)};
+		std::vector<std::vector<double>> stc_kv_l_g{2, std::vector<double>(difftot_kvmax_gnd[0] + 1)};
+		std::vector<std::vector<double>> stc_ku_l_a{2, std::vector<double>(difftot_kumax_asa[0] + 1)};
+		std::vector<std::vector<double>> stc_ku_l_g{2, std::vector<double>(difftot_kumax_gnd[0] + 1)};
 
+		std::vector<std::vector<double>> stc_kv_r_a{2, std::vector<double>(difftot_kvmax_asa[0] + 1)};
+		std::vector<std::vector<double>> stc_kv_r_g{2, std::vector<double>(difftot_kvmax_gnd[0] + 1)};
+		std::vector<std::vector<double>> stc_ku_r_a{2, std::vector<double>(difftot_kumax_asa[0] + 1)};
+		std::vector<std::vector<double>> stc_ku_r_g{2, std::vector<double>(difftot_kumax_gnd[0] + 1)};
+
+		std::vector<std::vector<double>> stc_kp{2, std::vector<double>(tdcprim_kpmax[0] - tdcprim_kpmin[0] + 1)};
 		const int niter_stc = 50;
 
 		const std::vector<double> y_pla={100,0,-100,100,0,-100};
 		const std::vector<double> z_pla={-124.95,-124.95,-124.95,124.95,124.95,124.95};
 
-		
+
 		TH1* h_test;
 		TH1* h_kv_totprim_s[2];
 		TH1* h_ku_totprim_s[2];	
@@ -238,7 +251,7 @@ class Analyze{
 		TH1* h_kv_dtot_r_as[2];
 		TH1* h_ku_dtot_r_as[2];
 		TH1*  h_kp_dw_as[2]; 
-		
+
 
 		TH1* h_driflen_kp_s[2];
 		TH1* h_driflen_ku_l_as[2];
@@ -249,9 +262,9 @@ class Analyze{
 		TH1* h_driflen_kv_l_gs[2];
 		TH1* h_driflen_kv_r_as[2];
 		TH1* h_driflen_kv_r_gs[2];
-	
-	 	TH1 *h_npvertex_basic;	
-		
+
+		TH1 *h_npvertex_basic;	
+
 		TH1* h_kp_tdcprim_corr_s[2];
 		TH1* h_kv_dtot_l_corr_gs[2];
 		TH1* h_ku_dtot_l_corr_gs[2];

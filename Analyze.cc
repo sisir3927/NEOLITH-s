@@ -34,10 +34,14 @@ Analyze::Analyze(int nRun, bool force):
 
 		ftracks = new TClonesArray("myTrack",100);
 		ftracks->SetOwner(kTRUE);
+		ftracks_cum = new TClonesArray("myTrack",100);
+		ftracks_cum->SetOwner(kTRUE);
 
 
 		LoadParameters("map/NEOLITHs.xml");
 		int neve =0;
+
+		if(force){
 		TFile *fout1 = new TFile (Form("root/sisir/Ana_Data_%d.root",nRun), "RECREATE");
 		TTree* ftree = new TTree("Hit_Tree", "Data Hit Information");
 
@@ -71,7 +75,6 @@ Analyze::Analyze(int nRun, bool force):
 
 
 		BookHistograms();
-		if(force){
 
 			estore = new TArtEventStore();
 			estore->Open(Form("ridf/neotest%04d.ridf",nRun));
@@ -105,10 +108,10 @@ Analyze::Analyze(int nRun, bool force):
 			MakeSTC();
 
 			ftree->Write();
-		}//force
 		fout1->Write();
 		fout1->Close();
 		delete fout1;
+		}//force
 
 
 		TFile *fin = new TFile (Form("root/sisir/Ana_Data_%d.root",nRun), "READ");
@@ -140,7 +143,10 @@ Analyze::Analyze(int nRun, bool force):
 		ftreein->SetBranchAddress("tof_incidence",&tof_incidence_in);
 		ftreein->SetBranchAddress("incidence_pla",&incidence_pla);
 		ftreein->SetBranchAddress("ref_tdc",&ref_tdc_in);
-TFile *fout2 =new TFile("root/test2.root","RECREATE");
+
+		TFile *fout2 =new TFile("root/test2.root","RECREATE");
+		TTree* ftree2 = new TTree("Track_Tree", "Data Track Information");
+		ftree2->Branch("ftracks",&ftracks);
 
 		BookHistograms();
 
@@ -162,8 +168,11 @@ TFile *fout2 =new TFile("root/test2.root","RECREATE");
 			MakeTracks();
 			Clear();
 		}
- h_npvertex_basic->Draw("colz");
+
 		fin->Close();
+		h_npvertex_basic->Draw("colz");
+		fout2->Write();
+
 
 
 
@@ -235,7 +244,6 @@ void Analyze::LoadData(){
 						hit->SetWireNum(para->GetWireID());
 						hit->SetWirePos(para->GetWirePosition());
 						hit->SetWirePosz(para->GetWireZPosition());
-						//		std::cout<<para->GetWireZPosition()<<std::endl;;
 						hit->SetDir(*(para->GetWireDirection()));
 						hit->SetIsAsagi(para->GetIsAsagi());
 						hit->SetTDC(val);
@@ -557,7 +565,7 @@ void Analyze::MakeGroups(){
 
 				grp->Add(hit);
 			} 	
-			else if(TMath::Abs(hit->GetWireNum() - grp->GetEndID()) >= 2) {
+			else if(TMath::Abs(hit->GetWireNum() - grp->GetEndID()) >= 2){ 	
 				grp = new myGroups(); 
 				fDCKpGroups[l]->Add(grp); 
 
@@ -573,7 +581,6 @@ void Analyze::MakeGroups(){
 
 
 
-		//	std::cout<<fDCKpGroups[l]->GetEntriesFast()<<" "<<fDCKvGroups[l]->GetEntriesFast()<<" "<<fDCKuGroups[l]->GetEntriesFast()<<std::endl;	
 
 
 	}//2 Layers
@@ -762,7 +769,7 @@ void Analyze::MakeSTC(){
 		//ASAGI 
 		for(int ist = 0; ist<difftot_kvmax_asa[l]; ist++ ){
 			h = h_kv_dtot_l_as[l];
-			stc_kv_l_a[l][ist] = (1- (h->Integral(h->FindBin(0),h->FindBin(ist)))/(1.*total_int_al))*(4.);
+			stc_kv_l_a[l][ist] = -(1- (h->Integral(h->FindBin(0),h->FindBin(ist)))/(1.*total_int_al))*(4.);
 			h_driflen_kv_l_as[l]->Fill(stc_kv_l_a[l][ist]);
 			h =h_kv_dtot_r_as[l];
 			stc_kv_r_a[l][ist] = (1- (h->Integral(h->FindBin(0),h->FindBin(ist)))/(1.*total_int_ar))*(4.);
@@ -774,7 +781,7 @@ void Analyze::MakeSTC(){
 		//GND
 		for(int ist = 0; ist<difftot_kvmax_gnd[l]; ist++ ){
 			h = h_kv_dtot_l_gs[l];
-			stc_kv_l_g[l][ist] = (1- (h->Integral(h->FindBin(0),h->FindBin(ist)))/(1.*total_int_gl))*(4.);
+			stc_kv_l_g[l][ist] = -(1- (h->Integral(h->FindBin(0),h->FindBin(ist)))/(1.*total_int_gl))*(4.);
 			h_driflen_kv_l_gs[l]->Fill(stc_kv_l_g[l][ist]);
 
 			h = h_kv_dtot_r_gs[l];
@@ -800,7 +807,7 @@ void Analyze::MakeSTC(){
 		//ASAGI 
 		for(int ist = 0; ist<difftot_kumax_asa[l]; ist++ ){
 			h = h_ku_dtot_l_as[l];
-			stc_ku_l_a[l][ist] = (1- (h->Integral(h->FindBin(0),h->FindBin(ist)))/(1.*total_int_al))*(4.);
+			stc_ku_l_a[l][ist] = -(1- (h->Integral(h->FindBin(0),h->FindBin(ist)))/(1.*total_int_al))*(4.);
 			h_driflen_ku_l_as[l]->Fill(stc_ku_l_a[l][ist]);
 
 			h = h_ku_dtot_r_as[l];
@@ -813,7 +820,7 @@ void Analyze::MakeSTC(){
 		//GND
 		for(int ist = 0; ist<difftot_kumax_gnd[l]; ist++ ){
 			h = h_ku_dtot_l_gs[l];
-			stc_ku_l_g[l][ist] = (1- (h->Integral(h->FindBin(0),h->FindBin(ist)))/(1.*total_int_gl))*(4.);
+			stc_ku_l_g[l][ist] = -(1- (h->Integral(h->FindBin(0),h->FindBin(ist)))/(1.*total_int_gl))*(4.);
 			h_driflen_ku_l_gs[l]->Fill(stc_ku_l_g[l][ist]);
 
 			h = h_ku_dtot_r_gs[l];
@@ -852,9 +859,16 @@ void Analyze::MakeDCHits(){
 	std::vector<double> xcat;
 
 	myGroups * grp = nullptr;
-
+	myGroups *ugrp = nullptr;
+	myGroups *vgrp = nullptr;
+	myGroups *xgrp = nullptr;
 	for (int l =0 ; l<2;l++){
-
+vid.clear();
+uid.clear();
+xid.clear();
+x.clear();
+v.clear();
+u.clear();
 
 		//Kv 
 		ngrps = fDCKvGroups[l]->GetEntriesFast(); 
@@ -934,6 +948,17 @@ void Analyze::MakeDCHits(){
 					new ((*fDCevts[l])[ndceve]) myDCevt();
 					dcevt = (myDCevt*) fDCevts[l]->At(ndceve);
 					dcevt->SetPos(x_pot,y,z);
+					ugrp = (myGroups*)fDCKuGroups[l]->At(uid[iu]);
+					vgrp = (myGroups*)fDCKvGroups[l]->At(vid[iv]);
+					dcevt->SetURdtot(ugrp->GetdToTR());
+					dcevt->SetVRdtot(vgrp->GetdToTR());
+					dcevt->SetULdtot(ugrp->GetdToTL());
+					dcevt->SetVLdtot(vgrp->GetdToTL());
+					dcevt->SetXdtdc(tdc);
+					dcevt->SetXID(grp->At(minid)->GetID());
+					dcevt->SetUID(ugrp->At(ugrp->GetMaxToTID()-ugrp->GetStartID())->GetID());
+					dcevt->SetVID(vgrp->At(vgrp->GetMaxToTID()-vgrp->GetStartID())->GetID());
+
 
 				}//Loop over groups X
 
@@ -967,6 +992,7 @@ Double_t Analyze::MakePositionCathode(myGroups* grp,int l){
 	int dtot_l = maxtot-maxid_ltot;
 	int dtot_r = maxtot-maxid_rtot;
 	double pos;
+	double avg_drf;
 	double strippos = grp->At(maxid)->GetWirePos();
 
 	TString v =*( grp->At(maxid)->GetDir());
@@ -974,14 +1000,19 @@ Double_t Analyze::MakePositionCathode(myGroups* grp,int l){
 
 		if(!Asagi){		
 			if(dtot_l>difftot_kvmax_gnd[l]) dtot_l = difftot_kvmax_gnd[l];
-			pos = strippos + stc_kv_l_g[l][dtot_l];
 			if(dtot_r>difftot_kvmax_gnd[l]) dtot_r = difftot_kvmax_gnd[l];
-			pos = strippos + stc_kv_r_g[l][dtot_r];
+
+			avg_drf =  (stc_kv_r_g[l][dtot_r]/(double)dtot_r+stc_kv_l_g[l][dtot_l]/(double)dtot_l)/(1/(double)dtot_l +1/(double)dtot_r);
+			pos = strippos + avg_drf;
+		//	pos = strippos + stc_kv_r_g[l][dtot_r]; 
+
 		}else{
 			if(dtot_l>difftot_kvmax_asa[l]) dtot_l = difftot_kvmax_asa[l];
-			pos = strippos + stc_kv_l_a[l][dtot_l];
 			if(dtot_r>difftot_kvmax_asa[l]) dtot_r = difftot_kvmax_asa[l];
-			pos = strippos + stc_kv_r_a[l][dtot_r];
+			avg_drf =  (stc_kv_r_a[l][dtot_r]/(double)dtot_r+stc_kv_l_a[l][dtot_l]/(double)dtot_l)/(1/(double)dtot_l +1/(double)dtot_r);
+			pos = strippos + avg_drf;
+
+		//	pos = strippos + stc_kv_r_a[l][dtot_r]; 
 
 		}
 
@@ -990,14 +1021,17 @@ Double_t Analyze::MakePositionCathode(myGroups* grp,int l){
 
 		if(!Asagi){		
 			if(dtot_l>difftot_kumax_gnd[l]) dtot_l = difftot_kumax_gnd[l];
-			pos = strippos + stc_ku_l_g[l][dtot_l];
 			if(dtot_r>difftot_kumax_gnd[l]) dtot_r = difftot_kumax_gnd[l];
-			pos = strippos + stc_ku_r_g[l][dtot_r];
+			avg_drf =  (stc_ku_r_g[l][dtot_r]/(double)dtot_r+stc_ku_l_g[l][dtot_l]/(double)dtot_l)/(1/(double)dtot_l +1/(double)dtot_r);
+			pos = strippos + avg_drf;
+		//	pos = strippos + stc_ku_r_g[l][dtot_r]; 
+
 		}else{
 			if(dtot_l>difftot_kumax_asa[l]) dtot_l = difftot_kumax_asa[l];
-			pos = strippos + stc_ku_l_a[l][dtot_l];
 			if(dtot_r>difftot_kumax_asa[l]) dtot_r = difftot_kumax_asa[l];
-			pos = strippos + stc_ku_r_a[l][dtot_r];
+			avg_drf =  (stc_ku_r_a[l][dtot_r]/(double)dtot_r+stc_ku_l_a[l][dtot_l]/(double)dtot_l)/(1/(double)dtot_l +1/(double)dtot_r);
+			pos = strippos + avg_drf;
+		//	pos = strippos + stc_ku_r_a[l][dtot_r]; 
 
 		}
 
@@ -1029,7 +1063,7 @@ void Analyze::MakeDCPosition(TClonesArray *KUgroups,TClonesArray *KVgrousp,  TVe
 void Analyze::MakeTracks(){
 
 	myTrack *tr = nullptr;
-
+	myDCevt* dcevt = nullptr;
 	int n_dceve[2]={fDCevts[0]->GetEntriesFast(),fDCevts[1]->GetEntriesFast()}; 
 
 	TVector3 *fl1pos = new TVector3(0,0,-124.95);
@@ -1039,12 +1073,20 @@ void Analyze::MakeTracks(){
 		if (n_dceve[1] ==0) break;
 		myTrack* track = (myTrack*)ftracks->ConstructedAt(ftracks->GetEntriesFast());
 		track->SetDC1evt((myDCevt*)fDCevts[0]->At(ieve1));
+		dcevt = (myDCevt*)fDCevts[0]->At(ieve1);
+		track->SetX1ID(dcevt->GetXID());
+		track->SetV1ID(dcevt->GetVID());
+		track->SetU1ID(dcevt->GetUID());
 		track->SetConvPos(fl1pos);
 		track->SetCatPos(fl2pos);
 		for (int ieve2 = 0; ieve2< n_dceve[1]; ieve2++){
 
 			track->SetDC2evt((myDCevt*)fDCevts[1]->At(ieve2));	
 
+			dcevt = (myDCevt*)fDCevts[1]->At(ieve2);
+			track->SetX2ID(dcevt->GetXID());
+			track->SetV2ID(dcevt->GetVID());
+			track->SetU2ID(dcevt->GetUID());
 			track->Calibrate();
 
 			bool fconv =false;
@@ -1056,6 +1098,7 @@ void Analyze::MakeTracks(){
 				if (TMath::Abs(track->GetnpVertex().Y()-y_pla[ipla])<=50){
 					fconv = true;
 					track->SetConvPos(0,y_pla[ipla],-124.95);
+					track->SetConvID(ipla);
 					break;
 				}
 
@@ -1066,14 +1109,21 @@ void Analyze::MakeTracks(){
 				if (TMath::Abs(track->GetpCatch().Y()-y_pla[ipla])<=50){
 					fcat = true;
 					track->SetCatPos(0,y_pla[ipla],124.95);
+					track->SetCatID(ipla);
 					break;
 				}
 
 			}// Layer 2 plastic hit check
+			int cum_index = ftracks_cum->GetEntriesFast();
+			new ((*ftracks_cum)[cum_index]) myTrack(*track);
+
 			h_npvertex_basic->Fill(track->GetnpVertex().X(), track->GetnpVertex().Y());
 			if(!(fconv && fcat)) {
 				if(ftracks->GetEntriesFast()>0)
 					ftracks->RemoveAt(ftracks->GetEntriesFast()-1);
+				ftracks_cum->RemoveAt(cum_index);
+			}else{
+			
 			}
 
 
@@ -1081,12 +1131,42 @@ void Analyze::MakeTracks(){
 
 
 	}// NEOLITH-s1 evts	
+	ftracks->Compress();
+	ftracks_cum->Compress();
 
+	//if(ftracks->GetEntriesFast()>1) std::cout<<((myTrack*)ftracks->At(0))->GetConvID()<<" "<<((myTrack*)ftracks->At(1))->GetConvID()<<std::endl;
+if(ftracks->GetEntriesFast()>1){
+myTrack* tr1 = (myTrack*)ftracks->At(0);
+myTrack* tr2 = (myTrack*)ftracks->At(1);
+
+std::cout<<(tr1->GetnpVertex()-tr2->GetnpVertex()).Mag()<<std::endl;
+}
 
 }
 ///////////////////////////////
 
-void Analyze::ReconstructSTC(){
+void Analyze::ReconstructSTC(int niter =50){
+
+	Int_t ntracks = ftracks_cum->GetEntriesFast();
+	myTrack* track = nullptr;
+	for(int iter = 0; iter<niter; iter++){
+		ClearSTCHist();
+		ClearSTC();
+		MakeSTC();
+		for(int itra=0; itra<ntracks; itra++){
+track = (myTrack*)ftracks_cum->At(itra);
+			if(track->GetZAngle()<TMath::Pi()/180.){	
+
+
+			}	
+
+
+		}//Loop over All Tracks
+
+
+		ClearSTC();
+		MakeSTC();
+	}
 
 
 
@@ -1286,6 +1366,53 @@ void Analyze::Clearin(){
 
 }
 /////////////////////////////////////////////////////////////
+void Analyze::ClearSTC(){
+
+	stc_kv_l_a.assign(2, std::vector<double>(difftot_kvmax_asa[0] + 1, 0.0));
+	stc_kv_l_g.assign(2, std::vector<double>(difftot_kvmax_gnd[0] + 1, 0.0));
+	stc_ku_l_a.assign(2, std::vector<double>(difftot_kumax_asa[0] + 1, 0.0));
+	stc_ku_l_g.assign(2, std::vector<double>(difftot_kumax_gnd[0] + 1, 0.0));
+	stc_kv_r_a.assign(2, std::vector<double>(difftot_kvmax_asa[0] + 1, 0.0));
+	stc_kv_r_g.assign(2, std::vector<double>(difftot_kvmax_gnd[0] + 1, 0.0));
+	stc_ku_r_a.assign(2, std::vector<double>(difftot_kumax_asa[0] + 1, 0.0));
+	stc_ku_r_g.assign(2, std::vector<double>(difftot_kumax_gnd[0] + 1, 0.0));
+
+	stc_kp.assign(2, std::vector<double>(tdcprim_kpmax[0] - tdcprim_kpmin[0] + 1, 0.0));
+
+	for(int l=0;l<2;l++){
+
+		h_driflen_kv_l_as[l]->Reset();
+		h_driflen_kv_r_as[l]->Reset();
+		h_driflen_kv_l_gs[l]->Reset();
+		h_driflen_kv_r_gs[l]->Reset();
+		h_driflen_ku_l_as[l]->Reset();
+		h_driflen_ku_r_as[l]->Reset();
+		h_driflen_ku_l_gs[l]->Reset();
+		h_driflen_ku_r_gs[l]->Reset();
+
+		h_driflen_kp_s[l]->Reset();
+	}
+
+
+}
+//////////////////////////////////////////////////////////////////
+void Analyze::ClearSTCHist(){
+
+	for(int l=0; l<2; l++){
+
+		h_kv_dtot_l_gs[l]->Reset();
+		h_kv_dtot_r_gs[l]->Reset();
+		h_kv_dtot_l_as[l]->Reset();
+		h_kv_dtot_r_as[l]->Reset();
+		h_ku_dtot_l_gs[l]->Reset();
+		h_ku_dtot_r_gs[l]->Reset();
+		h_ku_dtot_l_as[l]->Reset();
+		h_ku_dtot_r_as[l]->Reset();
+		h_kp_tdcprim_s[l]->Reset(); 
+	}
+
+}
+//////////////////////////////////////////////////////////////
 void Analyze::BookHistograms(){
 
 	for(int l=0; l<2; l++){

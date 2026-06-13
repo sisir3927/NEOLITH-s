@@ -5,18 +5,20 @@ myTrack::myTrack(){
 
 	fnpvertex = TVector3(-99999,-99999,-99999);
 	fpcatch = TVector3(-99999,-99999,-99999);
+	ftrackvec = TVector3(-99999,-99999,-99999);
+
+	fDC1HitPos_val = TVector3(-99999,-99999,-99999);
+	fDC2HitPos_val = TVector3(-99999,-99999,-99999);
 
 	fConvPos = nullptr;
 	fCatPos = nullptr;
 	fDC1HitPos = nullptr;
 	fDC2HitPos = nullptr;
-	ftrackvec = nullptr;
 	fdceve1 = nullptr;
 	fdceve2 = nullptr;
 	fXang = 0;
 	fYang = 0;
 	fZang = 0;
-
 }
 //////////////////////////////
 void myTrack::Calibrate(){
@@ -27,15 +29,17 @@ void myTrack::Calibrate(){
 				
 		fDC2HitPos = &(fdceve2->GetPos());	
 		fDC1HitPos = &(fdceve1->GetPos());	
+		fDC2HitPos_val = (fdceve2->GetPos());	
+		fDC1HitPos_val = (fdceve1->GetPos());	
 		
 		}
 		double z_int = fConvPos->Z();
 
 	if(fDC1HitPos && fDC2HitPos){
-		ftrackvec = new TVector3(fDC2HitPos->X() - fDC1HitPos->X(), fDC2HitPos->Y() - fDC1HitPos->Y(), fDC2HitPos->Z() - fDC1HitPos->Z());
-		Double_t x = ftrackvec->X();
-		Double_t y = ftrackvec->Y();
-		Double_t z = ftrackvec->Z();
+		ftrackvec =  TVector3(fDC2HitPos->X() - fDC1HitPos->X(), fDC2HitPos->Y() - fDC1HitPos->Y(), fDC2HitPos->Z() - fDC1HitPos->Z());
+		Double_t x = ftrackvec.X();
+		Double_t y = ftrackvec.Y();
+		Double_t z = ftrackvec.Z();
 		fXang = TMath::ATan2(x,z);
 		fYang = TMath::ATan2(y,z);
 		fZang = TMath::ATan2(TMath::Sqrt(x*x+y*y),z);
