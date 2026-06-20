@@ -46,6 +46,9 @@ class myTrack:public TObject{
 	void SetAsagiV(Int_t l,bool asa){fasagiV[l] =asa;}
 	void SetAsagiU(Int_t l,bool asa){fasagiU[l] =asa;}
 	
+
+	void SetXdir(int l, int k){fXdir[l] = k;}
+
 	//void SetXAngle(Double_t ang){fXang = ang;}
 	//void SetYAngle(Double_t ang){fYang = ang;}
 
@@ -99,7 +102,8 @@ class myTrack:public TObject{
 	Bool_t IsAsagiX(Int_t l){return fasagiX[l];}
 	Bool_t IsAsagiV(Int_t l){return fasagiV[l];}
 	Bool_t IsAsagiU(Int_t l){return fasagiU[l];}
-
+	
+	Int_t GetXdir(int l){return fXdir[l];}
 
 	TVector3 Extrapolate(Double_t xang, Double_t yang, TVector3* pos, Double_t zint);
 
@@ -138,6 +142,7 @@ class myTrack:public TObject{
 	Bool_t fasagiV[2];
 	Bool_t fasagiU[2];
 
+	Int_t fXdir[2];
 
 ClassDef(myTrack,1);
 

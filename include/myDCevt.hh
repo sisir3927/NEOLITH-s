@@ -49,6 +49,8 @@ class myDCevt:public TObject{
 		void SetURdtot(Int_t value){ fudifftot_r = value; }
 		void SetXdtdc(Int_t value){ fxdifftdc = value; }
 
+		void SetXdir(int k){fXdir = k;}
+
 		Int_t GetVGrpID(){return fgrpid_v;}
 		Int_t GetUGrpID(){return fgrpid_u;}
 		Int_t GetXGrpID(){return fgrpid_x;}
@@ -70,6 +72,9 @@ class myDCevt:public TObject{
 		Int_t GetVRdtot(){return fvdifftot_r;}
 		Int_t GetURdtot(){return fudifftot_r;}
 		Int_t GetXdtdc(){return fxdifftdc;}
+		
+		Int_t GetXdir(){return fXdir;}
+
 	private:
 
 		Int_t fx;
@@ -86,6 +91,8 @@ class myDCevt:public TObject{
 		Int_t fvdifftot_r;
 		Int_t fudifftot_r;
 		Int_t fxdifftdc;
+		
+		Int_t fXdir;
 
 		TVector3 fpos;
 

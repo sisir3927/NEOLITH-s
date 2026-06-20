@@ -82,7 +82,7 @@ Analyze::Analyze(int nRun, bool force):
 			neve = 0;
 
 			h_test= new TH1D("h_test","h_test",100,-0.5,8.5);
-			while(estore->GetNextEvent()&&neve<=1000){
+			while(estore->GetNextEvent()&&neve<=1000000){
 				std::cout << "\rProcessing Event: " << neve << std::flush;
 				//Initialize
 
@@ -169,13 +169,43 @@ Analyze::Analyze(int nRun, bool force):
 			Clear();
 		}
 
-		ReconstructSTC(3);
+		//fin->Close();
+		//fout2->Write();
+
+		h_npvertex_basic->Reset();
+
+		fout2 = new TFile("root/test2.root","RECREATE");
+		ftree2 = new TTree("Track_Tree", "Data Track Information");
+		ftree2->Branch("ftracks",&ftracks);
+
+		BookHistograms();
+
+		ReconstructSTC(50);
+
+	std::cout<<"------------------------------------------------------------------"<<std::endl;
+	for (Long64_t i=0; i<ftreein->GetEntries(); ++i) {
+			ftreein->GetEntry(i);
+			CopyInputVariables();
+			FormHitArrays(0);
+			for(int l=0 ; l<2; l++){
+				fDCKvHits[l]->Sort();
+				fDCKuHits[l]->Sort();
+				fDCKpHits[l]->Sort();
+
+				//	std::cout<<"HITs "<<fDCKvHits[l]->GetEntriesFast()<<" "<<fDCKuHits[l]->GetEntriesFast()<<" "<<fDCKvHits[l]->GetEntriesFast()<<std::endl;
+			}
+
+			MakeGroups();
+
+			MakeDCHits();
+			MakeTracks();
+			Clear();
+		}
+
+		h_npvertex_basic->Draw("colz");
+
 		fin->Close();
 		fout2->Write();
-
-		h_npvertex_corr->Draw("colz");
-
-
 
 
 
@@ -743,11 +773,11 @@ void Analyze::PrepareForSTC(){
 //////////////////////////////////////////////////////////////////////////////
 void Analyze::MakeSTC(){
 	TH1* h =nullptr;
-	int total_int_al = 0;
-	int total_int_ar = 0;
-	int total_int_gl = 0;
-	int total_int_gr = 0;
-	int total_kp = 0;
+	double total_int_al = 0;
+double total_int_ar = 0;
+	double total_int_gl = 0;
+	double total_int_gr = 0;
+	double total_kp = 0;
 
 	for (int l=0; l<2; l++){
 
@@ -769,10 +799,11 @@ void Analyze::MakeSTC(){
 		//ASAGI 
 		for(int ist = 0; ist<difftot_kvmax_asa[l]; ist++ ){
 			h = h_kv_dtot_l_as[l];
-			stc_kv_l_a[l][ist] = -(1- (h->Integral(h->FindBin(0),h->FindBin(ist)))/(1.*total_int_al))*(4.);
+			stc_kv_l_a[l][ist] = -((1- (h->Integral(h->FindBin(0),h->FindBin(ist))/(1.*total_int_al)))*(8.)-4);
+		//	std::cout<<stc_kv_l_a[l][ist]<<std::endl;
 			h_driflen_kv_l_as[l]->Fill(stc_kv_l_a[l][ist]);
 			h =h_kv_dtot_r_as[l];
-			stc_kv_r_a[l][ist] = (1- (h->Integral(h->FindBin(0),h->FindBin(ist)))/(1.*total_int_ar))*(4.);
+			stc_kv_r_a[l][ist] = (1- (h->Integral(h->FindBin(0),h->FindBin(ist))/(1.*total_int_ar)))*(8.)-4;
 			h_driflen_kv_r_as[l]->Fill(stc_kv_r_a[l][ist]);
 
 		}
@@ -781,11 +812,11 @@ void Analyze::MakeSTC(){
 		//GND
 		for(int ist = 0; ist<difftot_kvmax_gnd[l]; ist++ ){
 			h = h_kv_dtot_l_gs[l];
-			stc_kv_l_g[l][ist] = -(1- (h->Integral(h->FindBin(0),h->FindBin(ist)))/(1.*total_int_gl))*(4.);
+			stc_kv_l_g[l][ist] = -((1- (h->Integral(h->FindBin(0),h->FindBin(ist))/(1.*total_int_gl)))*(8.)-4);
 			h_driflen_kv_l_gs[l]->Fill(stc_kv_l_g[l][ist]);
 
 			h = h_kv_dtot_r_gs[l];
-			stc_kv_r_g[l][ist] = (1- (h->Integral(h->FindBin(0),h->FindBin(ist)))/(1.*total_int_gr))*(4.);
+			stc_kv_r_g[l][ist] = (1- (h->Integral(h->FindBin(0),h->FindBin(ist))/(1.*total_int_gr)))*(8.)-4;
 			h_driflen_kv_r_gs[l]->Fill(stc_kv_r_g[l][ist]);
 		}
 
@@ -797,6 +828,7 @@ void Analyze::MakeSTC(){
 		h = h_ku_dtot_l_as[l];
 		total_int_al = h->Integral(h->FindBin(0),h->FindBin(difftot_kumax_asa[l]));
 
+		h = h_ku_dtot_r_as[l];
 		total_int_ar = h->Integral(h->FindBin(0),h->FindBin(difftot_kumax_asa[l]));
 		h = h_ku_dtot_l_gs[l];
 		total_int_gl = h->Integral(h->FindBin(0),h->FindBin(difftot_kumax_gnd[l]));
@@ -807,11 +839,11 @@ void Analyze::MakeSTC(){
 		//ASAGI 
 		for(int ist = 0; ist<difftot_kumax_asa[l]; ist++ ){
 			h = h_ku_dtot_l_as[l];
-			stc_ku_l_a[l][ist] = -(1- (h->Integral(h->FindBin(0),h->FindBin(ist)))/(1.*total_int_al))*(4.);
+			stc_ku_l_a[l][ist] = -(1- (h->Integral(h->FindBin(0),h->FindBin(ist))/(1.*total_int_al)))*(8.)+4;
 			h_driflen_ku_l_as[l]->Fill(stc_ku_l_a[l][ist]);
 
 			h = h_ku_dtot_r_as[l];
-			stc_ku_r_a[l][ist] = (1- (h->Integral(h->FindBin(0),h->FindBin(ist)))/(1.*total_int_ar))*(4.);
+			stc_ku_r_a[l][ist] = (1- (h->Integral(h->FindBin(0),h->FindBin(ist))/(1.*total_int_ar)))*(8.)-4;
 			h_driflen_ku_r_as[l]->Fill(stc_ku_r_a[l][ist]);
 
 		}
@@ -820,11 +852,11 @@ void Analyze::MakeSTC(){
 		//GND
 		for(int ist = 0; ist<difftot_kumax_gnd[l]; ist++ ){
 			h = h_ku_dtot_l_gs[l];
-			stc_ku_l_g[l][ist] = -(1- (h->Integral(h->FindBin(0),h->FindBin(ist)))/(1.*total_int_gl))*(4.);
+			stc_ku_l_g[l][ist] = -(1- (h->Integral(h->FindBin(0),h->FindBin(ist))/(1.*total_int_gl)))*(8.)+4;
 			h_driflen_ku_l_gs[l]->Fill(stc_ku_l_g[l][ist]);
 
 			h = h_ku_dtot_r_gs[l];
-			stc_ku_r_g[l][ist] = (1- (h->Integral(h->FindBin(0),h->FindBin(ist)))/(1.*total_int_gr))*(4.);
+			stc_ku_r_g[l][ist] = (1- (h->Integral(h->FindBin(0),h->FindBin(ist))/(1.*total_int_gr)))*(8.)-4;
 			h_driflen_ku_r_gs[l]->Fill(stc_ku_r_g[l][ist]);
 		}
 
@@ -932,12 +964,12 @@ void Analyze::MakeDCHits(){
 					Double_t x_pot = -99999;
 					if(TMath::Abs(anx[1]-xcr)<1){
 						kdir = -1;
-						x_pot = anx[1] - x_drift;
+						x_pot = anx[1] - x_drift; //potpos + kdir*(8 + x_drift)
 					}
 
 					else if( TMath::Abs(anx[0]-xcr<1)){
 						kdir = 1;	
-						x_pot = anx[1] + x_drift;
+						x_pot = anx[0] + x_drift; //potpos + kdir*(8 + x_drift) 
 					}
 					else {continue;}
 					Double_t y = 	(u[iu]-v[iv])/TMath::Sqrt(2);
@@ -948,6 +980,7 @@ void Analyze::MakeDCHits(){
 					new ((*fDCevts[l])[ndceve]) myDCevt();
 					dcevt = (myDCevt*) fDCevts[l]->At(ndceve);
 					dcevt->SetPos(x_pot,y,z);
+					dcevt->SetXdir(kdir);
 					ugrp = (myGroups*)fDCKuGroups[l]->At(uid[iu]);
 					vgrp = (myGroups*)fDCKvGroups[l]->At(vid[iv]);
 					dcevt->SetURdtot(ugrp->GetdToTR());
@@ -985,7 +1018,7 @@ Double_t Analyze::MakePositionCathode(myGroups* grp,int l){
 	int maxid = grp->GetMaxToTID()-grp->GetStartID();
 	int maxtot  =grp->GetMaxToT();
 	int maxid_l = maxid- 1;
-	int maxid_r = maxid- 1;
+	int maxid_r = maxid+ 1;
 	int maxid_ltot= grp->At(maxid_l)->GetToT();
 	int maxid_rtot= grp->At(maxid_r)->GetToT();
 	bool Asagi = grp->At(maxid)->IsAsagi();
@@ -1071,6 +1104,7 @@ void Analyze::MakeTracks(){
 
 	for (int ieve1 = 0; ieve1<n_dceve[0];ieve1++){
 		if (n_dceve[1] ==0) break;
+		for (int ieve2 = 0; ieve2< n_dceve[1]; ieve2++){
 		myTrack* track = (myTrack*)ftracks->ConstructedAt(ftracks->GetEntriesFast());
 		track->SetDC1evt((myDCevt*)fDCevts[0]->At(ieve1));
 		dcevt = (myDCevt*)fDCevts[0]->At(ieve1);
@@ -1079,7 +1113,6 @@ void Analyze::MakeTracks(){
 		track->SetUID(0,dcevt->GetUID());
 		track->SetConvPos(fl1pos);
 		track->SetCatPos(fl2pos);
-		for (int ieve2 = 0; ieve2< n_dceve[1]; ieve2++){
 
 			track->SetDC2evt((myDCevt*)fDCevts[1]->At(ieve2));	
 
@@ -1134,14 +1167,13 @@ void Analyze::MakeTracks(){
 	ftracks->Compress();
 	ftracks_cum->Compress();
 
-	//if(ftracks->GetEntriesFast()>1) std::cout<<((myTrack*)ftracks->At(0))->GetConvID()<<" "<<((myTrack*)ftracks->At(1))->GetConvID()<<std::endl;
+//	if(ftracks->GetEntriesFast()>1) std::cout<<((myTrack*)ftracks->At(0))->GetConvID()<<" "<<((myTrack*)ftracks->At(1))->GetConvID()<<std::endl;
 	if(ftracks->GetEntriesFast()>1){
 		myTrack* tr1 = (myTrack*)ftracks->At(0);
 		myTrack* tr2 = (myTrack*)ftracks->At(1);
 
-		//std::cout<<(tr1->GetnpVertex()-tr2->GetnpVertex()).Mag()<<std::endl;
+		std::cout<<(tr1->GetnpVertex()-tr2->GetnpVertex()).Mag()<<std::endl;
 	}
-
 }
 ///////////////////////////////
 
@@ -1154,8 +1186,6 @@ void Analyze::ReconstructSTC(int niter){
 	myDCHitPara *para = nullptr;
 	for(int iter = 0; iter<niter; iter++){
 		ClearSTCHist();
-		ClearSTC();
-		MakeSTC();
 if(iter>= niter-2){
 
 			h_npvertex_corr->Reset();
@@ -1165,11 +1195,10 @@ if(iter>= niter-2){
 
 			/*Make Position on Cathode and potential*/
 
-				std::cout<<"Y Angle "<<track->GetYAngle()<<std::endl;
+			//	std::cout<<"Y Angle "<<track->GetYAngle()<<std::endl;
 			ModifyTrack(track);
 
-				std::cout<<track->GetYAngle()*180./TMath::Pi()<<std::endl;
-				if(TMath::Abs(track->GetYAngle())<2*TMath::Pi()/180.){
+				if(TMath::Abs(track->GetZAngle())<10*TMath::Pi()/180.){
 				for(int l =0; l<2;l++){	
 					para = const_cast<myDCHitPara*>(FindDCHitPara(track->GetVID(l)));
 					Bool_t asagiv = para->GetIsAsagi();
@@ -1199,9 +1228,9 @@ if(iter>= niter-2){
 
 
 
-			}
+			}//TrackY angle
 
-			if(TMath::Abs(track->GetXAngle())<2*TMath::Pi()/180.){	
+			if(TMath::Abs(track->GetZAngle())<10*TMath::Pi()/180.){	
 				for(int l =0; l<2; l++){
 					para = const_cast<myDCHitPara*>(FindDCHitPara(track->GetXID(l)));
 					Bool_t asagix = para->GetIsAsagi();
@@ -1222,8 +1251,8 @@ if(iter>=niter-2){
 		}//Loop over All Tracks
 
 
-	//	ClearSTC();
-	//	MakeSTC();
+		ClearSTC();
+		MakeSTC();
 	}
 
 
@@ -1242,13 +1271,13 @@ void Analyze::ModifyTrack(myTrack* track){
 		Bool_t asagiv = para->GetIsAsagi();
 		int dtot_r = track->GetVRdtot(l);
 		int dtot_l = track->GetVLdtot(l);
-		double strippos = para->GetWireZPosition();
+		double strippos = para->GetWirePosition();
 
 		if(asagiv){
 			if(dtot_l>difftot_kvmax_asa[l]) dtot_l = difftot_kvmax_asa[l];
 			if(dtot_r>difftot_kvmax_asa[l]) dtot_r = difftot_kvmax_asa[l];
-
 			avg_drf =  (stc_kv_r_a[l][dtot_r]/(double)dtot_r+stc_kv_l_a[l][dtot_l]/(double)dtot_l)/(1/(double)dtot_l +1/(double)dtot_r);
+		//	std::cout<<dtot_l<<" "<<avg_drf;
 			posv = strippos + avg_drf;
 
 		}
@@ -1265,7 +1294,7 @@ void Analyze::ModifyTrack(myTrack* track){
                  dtot_r = track->GetURdtot(l);
                  dtot_l = track->GetULdtot(l);
 		 //std::cout<<dtot_r<<" "<<dtot_l<<std::endl;
-                 strippos = para->GetWireZPosition();
+                 strippos = para->GetWirePosition();
                 if(asagiu){
                         if(dtot_l>difftot_kumax_asa[l]) dtot_l = difftot_kumax_asa[l];
                         if(dtot_r>difftot_kumax_asa[l]) dtot_r = difftot_kumax_asa[l];
@@ -1287,10 +1316,10 @@ posy = (posu-posv)/TMath::Sqrt(2);
                 para = const_cast<myDCHitPara*>(FindDCHitPara(track->GetXID(l)));
 		Bool_t asagix = para->GetIsAsagi();
                 int tdc = track->GetXtdc(l);
-	       	strippos = para->GetWireZPosition();
+	       	strippos = para->GetWirePosition();
 
 		Double_t x_drift = CalcDriftLenPot( tdc,  l);
-		posx = strippos+ x_drift;
+		posx = strippos + (track->GetXdir(l))*(8+x_drift);
 	//	std::cout<<posx<<" "<<posy<<std::endl;
 		//std::cout<<posx<<" "<<posy<<" "<<para->GetWireZPosition()<<std::endl;	
 		track->SetDCHit(l,TVector3(posx,posy,para->GetWireZPosition()));
@@ -1592,14 +1621,14 @@ void Analyze::BookHistograms(){
 		h_kp_dw_s[l] = new TH1I(Form("h_kp_dw_s%d",l+1),Form("dW KP NEOLITH-s%d",l+1),500,-2000,2000);	
 
 		h_driflen_kp_s[l] = new TH1D(Form("h_driflen_kp_s%d",l+1),Form("Drift Length Distribution Kp NEOLITH-s %d",l+1),100,0,10 );
-		h_driflen_kv_l_as[l] = new TH1D(Form("h_driflen_kv_l_as%d",l+1),Form("Left Drift Length Distribution Kv Asagi NEOLITH-s %d",l+1),100,0,5 );
-		h_driflen_kv_l_gs[l] = new TH1D(Form("h_driflen_kv_l_gs%d",l+1),Form("Left Drift Length Distribution Kv GND NEOLITH-s %d",l+1),100,0,5 );
-		h_driflen_kv_r_as[l] = new TH1D(Form("h_driflen_kv_r_as%d",l+1),Form("Right Drift Length Distribution Kv Asagi NEOLITH-s %d",l+1),100,0,5 );
-		h_driflen_kv_r_gs[l] = new TH1D(Form("h_driflen_kv_r_gs%d",l+1),Form("Right Drift Length Distribution Kv GND NEOLITH-s %d",l+1),100,0,5 );
-		h_driflen_ku_l_as[l] = new TH1D(Form("h_driflen_ku_l_as%d",l+1),Form("Left Drift Length Distribution Ku Asagi NEOLITH-s %d",l+1),100,0,5 );
-		h_driflen_ku_l_gs[l] = new TH1D(Form("h_driflen_ku_l_gs%d",l+1),Form("Left Drift Length Distribution Ku GND NEOLITH-s %d",l+1),100,0,5 );
-		h_driflen_ku_r_as[l] = new TH1D(Form("h_driflen_ku_r_as%d",l+1),Form("Right Drift Length Distribution Ku Asagi NEOLITH-s %d",l+1),100,0,5 );
-		h_driflen_ku_r_gs[l] = new TH1D(Form("h_driflen_ku_r_gs%d",l+1),Form("Right Drift Length Distribution Ku GND NEOLITH-s %d",l+1),100,0,5 );
+		h_driflen_kv_l_as[l] = new TH1D(Form("h_driflen_kv_l_as%d",l+1),Form("Left Drift Length Distribution Kv Asagi NEOLITH-s %d",l+1),100,-5,5 );
+		h_driflen_kv_l_gs[l] = new TH1D(Form("h_driflen_kv_l_gs%d",l+1),Form("Left Drift Length Distribution Kv GND NEOLITH-s %d",l+1),100,-5,5 );
+		h_driflen_kv_r_as[l] = new TH1D(Form("h_driflen_kv_r_as%d",l+1),Form("Right Drift Length Distribution Kv Asagi NEOLITH-s %d",l+1),100,-5,5 );
+		h_driflen_kv_r_gs[l] = new TH1D(Form("h_driflen_kv_r_gs%d",l+1),Form("Right Drift Length Distribution Kv GND NEOLITH-s %d",l+1),100,-5,5 );
+		h_driflen_ku_l_as[l] = new TH1D(Form("h_driflen_ku_l_as%d",l+1),Form("Left Drift Length Distribution Ku Asagi NEOLITH-s %d",l+1),100,-5,5 );
+		h_driflen_ku_l_gs[l] = new TH1D(Form("h_driflen_ku_l_gs%d",l+1),Form("Left Drift Length Distribution Ku GND NEOLITH-s %d",l+1),100,-5,5 );
+		h_driflen_ku_r_as[l] = new TH1D(Form("h_driflen_ku_r_as%d",l+1),Form("Right Drift Length Distribution Ku Asagi NEOLITH-s %d",l+1),100,-5,5 );
+		h_driflen_ku_r_gs[l] = new TH1D(Form("h_driflen_ku_r_gs%d",l+1),Form("Right Drift Length Distribution Ku GND NEOLITH-s %d",l+1),100,-5,5 );
 
 
 

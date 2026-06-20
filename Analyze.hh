@@ -189,8 +189,8 @@ class Analyze{
 		const int tdc_init = -99999;
 		const std::vector<int>qdc_ped =  {55,13,57,27,66,49,48,55,60,68,65,67};
 
-		static constexpr int difftot_kumax_asa[2] = {10000,10000};
-		static constexpr int difftot_kvmax_asa[2] = {10000,10000};
+		static constexpr int difftot_kumax_asa[2] = {3200,3200};
+		static constexpr int difftot_kvmax_asa[2] = {3200,3200};
 		static constexpr int difftot_kumax_gnd[2] = {3000,3000};
 		static constexpr int difftot_kvmax_gnd[2] = {3000,3000};
 

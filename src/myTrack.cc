@@ -43,13 +43,16 @@ void myTrack::Calibrate(){
 		fURdtot[0] = fdceve1->GetURdtot();	
 		fVLdtot[0] = fdceve1->GetVLdtot();	
 		fVRdtot[0] = fdceve1->GetVRdtot();	
-		
+		fXdir[0] = fdceve1->GetXdir();
+
 		fXdtdc[1] = fdceve2->GetXdtdc();	
 		fULdtot[1] = fdceve2->GetULdtot();	
 		fURdtot[1] = fdceve2->GetURdtot();	
 		fVLdtot[1] = fdceve2->GetVLdtot();	
 		fVRdtot[1] = fdceve2->GetVRdtot();	
+		fXdir[1]   = fdceve2->GetXdir();
 		
+	
 		}
 		double z_int = fConvPos->Z();
 
@@ -61,7 +64,7 @@ void myTrack::Calibrate(){
 		Double_t z = ftrackvec.Z();
 		fXang = TMath::ATan2(x,z);
 		fYang = TMath::ATan2(y,z);
-		std::cout<<fXang<<" "<<fYang<<std::endl;
+//		std::cout<<fXang<<" "<<fYang<<std::endl;
 	//	std::cout<<fXang<<" "<<fDCHitPos_val[1].X()<<" " <<fDCHitPos_val[0].X() <<" "<<x<<std::endl;
 		fZang = TMath::ATan2(TMath::Sqrt(x*x+y*y),z);
 	if(fConvPos)
