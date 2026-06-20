@@ -21,31 +21,30 @@ class myTrack:public TObject{
 	void SetCatPos(TVector3* pos) {fCatPos =pos;}
 	void SetCatID(int id){fid2 = id;}
 
-	void SetX1ID(int id){fx1id =id;}
-	void SetV1ID(int id){fv1id =id;}
-	void SetU1ID(int id){fu1id =id;}
-	void SetX2ID(int id){fx2id =id;}
-	void SetV2ID(int id){fv2id =id;}
-	void SetU2ID(int id){fu2id =id;}
+	void SetXID(Int_t l,int id){fxid[l] =id;}
+	void SetVID(Int_t l,int id){fvid[l] =id;}
+	void SetUID(Int_t l,int id){fuid[l] =id;}
 
-	void SetDC1Hit(Double_t x, Double_t y, Double_t z){fDC1HitPos_val.SetXYZ(x,y,z);fDC1HitPos->SetXYZ(x,y,z); }
-	void SetDC1Hit(TVector3* pos){fDC1HitPos = pos;}
-	void SetDC1Hit(TVector3 pos){fDC1HitPos_val = pos;fDC1HitPos = &fDC1HitPos_val;}
-	void SetDC2Hit(Double_t x, Double_t y, Double_t z){fDC2HitPos->SetXYZ(x,y,z);}
-	void SetDC2Hit(TVector3* pos){fDC2HitPos = pos;}
-	void SetDC2Hit(TVector3 pos){fDC2HitPos_val = pos; fDC2HitPos = &fDC2HitPos_val;}
+	void SetDCHit(Int_t l, Double_t x, Double_t y, Double_t z){fDCHitPos_val[l].SetXYZ(x,y,z);fDCHitPos[l]->SetXYZ(x,y,z); }
+	void SetDCHit(Int_t l, TVector3* pos){fDCHitPos[l] = pos;}
+	void SetDCHit(Int_t l, TVector3 pos){fDCHitPos_val[l] = pos;fDCHitPos[l] = &fDCHitPos_val[l];}
+	
 	void SetXAngle(Double_t ang){fXang = ang;}
 	void SetYAngle(Double_t ang){fYang = ang;}
 
-	void SetXdtdc(Int_t drift){fXdtdc = drift;}
-	void SetULdtot(Int_t drift){fULdtot = drift;}
-	void SetVLdtot(Int_t drift){fVLdtot = drift;}
-	void SetURdtot(Int_t drift){fURdtot = drift;}
-	void SetVRdtot(Int_t drift){fVRdtot = drift;}
+	void SetXtdc(Int_t l, Int_t drift){fXdtdc[l] = drift;}
+	void SetULdtot(Int_t l,Int_t drift){fULdtot[l] = drift;}
+	void SetVLdtot(Int_t l,Int_t drift){fVLdtot[l] = drift;}
+	void SetURdtot(Int_t l,Int_t drift){fURdtot[l] = drift;}
+	void SetVRdtot(Int_t l,Int_t drift){fVRdtot[l] = drift;}
 
 
 	void SetDC1evt(myDCevt *eve){fdceve1 = eve;}
 	void SetDC2evt(myDCevt *eve){fdceve2 = eve;}
+
+	void SetAsagiX(Int_t l,bool asa){fasagiX[l] =asa;}
+	void SetAsagiV(Int_t l,bool asa){fasagiV[l] =asa;}
+	void SetAsagiU(Int_t l,bool asa){fasagiU[l] =asa;}
 	
 	//void SetXAngle(Double_t ang){fXang = ang;}
 	//void SetYAngle(Double_t ang){fYang = ang;}
@@ -55,8 +54,7 @@ class myTrack:public TObject{
 	TVector3* GetConvPos(){return fConvPos;}
 	TVector3* GetCatPos(){return fCatPos;}
 
-	TVector3 GetDC1HitPos(){return fDC1HitPos_val;}
-	TVector3 GetDC2HitPos(){return fDC2HitPos_val;}
+	TVector3 GetDCHitPos(Int_t l){return fDCHitPos_val[l];}
 
 	myDCevt* GetDC1evt(){return fdceve1;}	
 	myDCevt* GetDC2evt(){return fdceve1;}	
@@ -82,25 +80,25 @@ class myTrack:public TObject{
 	Double_t GetYAngle(){return fYang;}
 	Double_t GetZAngle(){return fZang;}
 
-	Double_t GetXdtdc(){return fXdtdc;}
-	Double_t GetULdtot(){return fULdtot;}
-	Double_t GetVLdtot(){return fVLdtot;}
-	Double_t GetURdtot(){return fURdtot;}
-	Double_t GetVRdtot(){return fVRdtot;}
+	Double_t GetXtdc(Int_t l){return fXdtdc[l];}
+	Double_t GetULdtot(Int_t l){return fULdtot[l];}
+	Double_t GetVLdtot(Int_t l){return fVLdtot[l];}
+	Double_t GetURdtot(Int_t l){return fURdtot[l];}
+	Double_t GetVRdtot(Int_t l){return fVRdtot[l];}
 
 
 
-	Int_t GetX1ID(){return fx1id;}
-	Int_t GetV1ID(){return fv1id;}
-	Int_t GetU1ID(){return fu1id;}
-	Int_t GetX2ID(){return fx2id;}
-	Int_t GetV2ID(){return fv2id;}
-	Int_t GetU2ID(){return fu2id;}
+	Int_t GetXID(Int_t l){return fxid[l];}
+	Int_t GetVID(Int_t l){return fvid[l];}
+	Int_t GetUID(Int_t l){return fuid[l];}
 
 	TVector3 GetnpVertex();	
 	TVector3 GetpCatch(){return fpcatch;}
 	TVector3 GetVect(){return ftrackvec;}
 
+	Bool_t IsAsagiX(Int_t l){return fasagiX[l];}
+	Bool_t IsAsagiV(Int_t l){return fasagiV[l];}
+	Bool_t IsAsagiU(Int_t l){return fasagiU[l];}
 
 
 	TVector3 Extrapolate(Double_t xang, Double_t yang, TVector3* pos, Double_t zint);
@@ -109,10 +107,8 @@ class myTrack:public TObject{
 
 	TVector3 *fConvPos;
 	TVector3 *fCatPos;
-	TVector3 *fDC1HitPos;
-	TVector3 *fDC2HitPos;
-	TVector3 fDC1HitPos_val;
-	TVector3 fDC2HitPos_val;
+	TVector3 *fDCHitPos[2];
+	TVector3 fDCHitPos_val[2];
 
 	TVector3 fnpvertex;
 	TVector3 fpcatch;
@@ -124,24 +120,23 @@ class myTrack:public TObject{
 	int fid1;
 	int fid2;
 
-	int fx1id;
-	int fv1id;
-	int fu1id;
-	int fx2id;
-	int fv2id;
-	int fu2id;
+	int fxid[2];
+	int fvid[2];
+	int fuid[2];
 
 	Double_t fXang;
 	Double_t fYang;
 	Double_t fZang;
 
-	Double_t fXdtdc;
-	Double_t fULdtot;
-	Double_t fVLdtot;
-	Double_t fURdtot;
-	Double_t fVRdtot;
+	Int_t fXdtdc[2];
+	Int_t fULdtot[2];
+	Int_t fVLdtot[2];
+	Int_t fURdtot[2];
+	Int_t fVRdtot[2];
 
-
+	Bool_t fasagiX[2];
+	Bool_t fasagiV[2];
+	Bool_t fasagiU[2];
 
 
 ClassDef(myTrack,1);

@@ -43,6 +43,7 @@ class Analyze{
 		void MakeDCPosition(TClonesArray *KUgroups,TClonesArray *KVgrousp,  TVector3 *dcpos); // 
 		void MakeTracks(); //Make Tracks and plot 
 		void ReconstructSTC(int niter);
+		void ModifyTrack(myTrack *track);
 		void ReconstructTracks();
 
 		void BookHistograms();
@@ -52,6 +53,7 @@ class Analyze{
 		void ClearSTCHist();
 
 		const myDCHitPara* FindDCHitPara(TArtRIDFMap *rmap) const;
+		const myDCHitPara* FindDCHitPara(Int_t id) const;
 		bool LoadParameters(const char *filexml);
 
 		void CopyInputVariables();
@@ -92,6 +94,7 @@ class Analyze{
 
 
 		std::map<TArtRIDFMap, myDCHitPara *> dc_pmap;
+		std::map<Int_t, myDCHitPara *> dc_pmap_int;
 		TList* listOfDCHitPara;
 
 		std::vector<int> qdcorg_ch;
@@ -244,6 +247,10 @@ class Analyze{
 		TH1* h_ku_dtot_l_gs[2];
 		TH1* h_kv_dtot_r_gs[2];
 		TH1* h_ku_dtot_r_gs[2];
+		TH1* h_kv_dtot_gs[2];
+		TH1* h_ku_dtot_gs[2];
+		TH1* h_kv_dtot_as[2];
+		TH1* h_ku_dtot_as[2];
 		TH1*  h_kp_dw_gs[2]; 
 
 		TH1* h_kv_dtot_l_as[2];
@@ -264,6 +271,7 @@ class Analyze{
 		TH1* h_driflen_kv_r_gs[2];
 
 		TH1 *h_npvertex_basic;	
+		TH1 *h_npvertex_corr;	
 
 		TH1* h_kp_tdcprim_corr_s[2];
 		TH1* h_kv_dtot_l_corr_gs[2];

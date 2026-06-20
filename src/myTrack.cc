@@ -7,47 +7,68 @@ myTrack::myTrack(){
 	fpcatch = TVector3(-99999,-99999,-99999);
 	ftrackvec = TVector3(-99999,-99999,-99999);
 
-	fDC1HitPos_val = TVector3(-99999,-99999,-99999);
-	fDC2HitPos_val = TVector3(-99999,-99999,-99999);
-
+	fDCHitPos_val[0] = TVector3(-99999,-99999,-99999);
+	fDCHitPos_val[1] = TVector3(-99999,-99999,-99999);
+for(int l=0; l<2;l++){
+	fXdtdc[l]  = -99999;	
+	fULdtot[l]  = -99999;	
+	fURdtot[l]  = -99999;	
+	fVLdtot[l]  = -99999;	
+	fVRdtot[l]  = -99999;	
+}
 	fConvPos = nullptr;
 	fCatPos = nullptr;
-	fDC1HitPos = nullptr;
-	fDC2HitPos = nullptr;
+	fDCHitPos[0] = nullptr;
+	fDCHitPos[1] = nullptr;
 	fdceve1 = nullptr;
 	fdceve2 = nullptr;
-	fXang = 0;
-	fYang = 0;
-	fZang = 0;
+	fXang = -99999;
+	fYang = -99999;
+	fZang = -99999;
 }
 //////////////////////////////
 void myTrack::Calibrate(){
 
-		if(!fDC2HitPos || !fDC1HitPos){
+		if(!fDCHitPos[0] || !fDCHitPos[1]){
 		
 		if(!fdceve1 || !fdceve2){ std::cout<<"Cannot Calibrate"<<std::endl;return;}
 				
-		fDC2HitPos = &(fdceve2->GetPos());	
-		fDC1HitPos = &(fdceve1->GetPos());	
-		fDC2HitPos_val = (fdceve2->GetPos());	
-		fDC1HitPos_val = (fdceve1->GetPos());	
+		fDCHitPos[1] = &(fdceve2->GetPos());	
+		fDCHitPos[0] = &(fdceve1->GetPos());	
+		fDCHitPos_val[1] = (fdceve2->GetPos());	
+		fDCHitPos_val[0] = (fdceve1->GetPos());	
+	
+		fXdtdc[0] = fdceve1->GetXdtdc();	
+		fULdtot[0] = fdceve1->GetULdtot();	
+		fURdtot[0] = fdceve1->GetURdtot();	
+		fVLdtot[0] = fdceve1->GetVLdtot();	
+		fVRdtot[0] = fdceve1->GetVRdtot();	
+		
+		fXdtdc[1] = fdceve2->GetXdtdc();	
+		fULdtot[1] = fdceve2->GetULdtot();	
+		fURdtot[1] = fdceve2->GetURdtot();	
+		fVLdtot[1] = fdceve2->GetVLdtot();	
+		fVRdtot[1] = fdceve2->GetVRdtot();	
 		
 		}
 		double z_int = fConvPos->Z();
 
-	if(fDC1HitPos && fDC2HitPos){
-		ftrackvec =  TVector3(fDC2HitPos->X() - fDC1HitPos->X(), fDC2HitPos->Y() - fDC1HitPos->Y(), fDC2HitPos->Z() - fDC1HitPos->Z());
+	if(fDCHitPos[0] && fDCHitPos[1]){
+		ftrackvec =  TVector3(fDCHitPos_val[1].X() - fDCHitPos_val[0].X(), fDCHitPos_val[1].Y() - fDCHitPos_val[0].Y(), fDCHitPos_val[1].Z() - fDCHitPos_val[0].Z());
+		
 		Double_t x = ftrackvec.X();
 		Double_t y = ftrackvec.Y();
 		Double_t z = ftrackvec.Z();
 		fXang = TMath::ATan2(x,z);
 		fYang = TMath::ATan2(y,z);
+		std::cout<<fXang<<" "<<fYang<<std::endl;
+	//	std::cout<<fXang<<" "<<fDCHitPos_val[1].X()<<" " <<fDCHitPos_val[0].X() <<" "<<x<<std::endl;
 		fZang = TMath::ATan2(TMath::Sqrt(x*x+y*y),z);
 	if(fConvPos)
-		fnpvertex = Extrapolate(fXang, fYang, fDC1HitPos, z_int);
+		fnpvertex = Extrapolate(fXang, fYang, fDCHitPos[0], z_int);
 	
 	if(fCatPos) 
-		fpcatch = Extrapolate(fXang, fYang, fDC1HitPos, fCatPos->Z());
+		fpcatch = Extrapolate(fXang, fYang, fDCHitPos[0], fCatPos->Z());
 	}
 
 }
@@ -92,8 +113,8 @@ void myTrack::Clear(){
 	fpcatch = TVector3(-99999,-99999,-99999);
 	fConvPos = nullptr;
 	fCatPos = nullptr;
-	fDC1HitPos = nullptr;
-	fDC2HitPos = nullptr;
+	fDCHitPos[0] = nullptr;
+	fDCHitPos[1] = nullptr;
 
 }
 

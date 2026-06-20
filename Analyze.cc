@@ -42,39 +42,39 @@ Analyze::Analyze(int nRun, bool force):
 		int neve =0;
 
 		if(force){
-		TFile *fout1 = new TFile (Form("root/sisir/Ana_Data_%d.root",nRun), "RECREATE");
-		TTree* ftree = new TTree("Hit_Tree", "Data Hit Information");
+			TFile *fout1 = new TFile (Form("root/sisir/Ana_Data_%d.root",nRun), "RECREATE");
+			TTree* ftree = new TTree("Hit_Tree", "Data Hit Information");
 
-		ftree->Branch("fDCWireHits",&fDCWireHits);
-		ftree->Branch("eve",&neve);
-		ftree->Branch("tdc_pmt",&tdc_pmt);
-		ftree->Branch("tdc_ch",&tdc_ch);
-		ftree->Branch("trail_tdc_ch",&trail_tdc_ch);
-		ftree->Branch("qtc_pmt",&qtc_pmt);
-		ftree->Branch("qdc_pmt",&qdc_pmt);
-		ftree->Branch("qdc_pla",&qdc_pla);
-		ftree->Branch("t_pla",&t_pla);
-		ftree->Branch("tdiff_pla",&tdiff_pla);
-		ftree->Branch("tof_row",&tof_row);
-		ftree->Branch("tof_pattern",&tof_pattern);
-		ftree->Branch("ref_trig_bool",&ref_trig_bool);
-		ftree->Branch("pla_bool",&pla_bool);
-		ftree->Branch("pattern_bool",&pattern_bool);
-		ftree->Branch("pmt_bool",&pmt_bool);
-		ftree->Branch("row_bool",&row_bool);
-		ftree->Branch("veto_bool",&veto_bool);
-		ftree->Branch("sbt_bool",&sbt_bool);
-		ftree->Branch("tof_sbt_pla",&tof_sbt_pla);
-		ftree->Branch("veto_tdc",&veto_tdc);
-		ftree->Branch("sbt_tdc",&sbt_tdc);
-		ftree->Branch("incidence_tdc",&incidence_tdc);
-		ftree->Branch("tof_incidence",&tof_incidence);
-		ftree->Branch("incidence_pla",&incidence_pla);
-		ftree->Branch("ref_tdc",&ref_tdc);
+			ftree->Branch("fDCWireHits",&fDCWireHits);
+			ftree->Branch("eve",&neve);
+			ftree->Branch("tdc_pmt",&tdc_pmt);
+			ftree->Branch("tdc_ch",&tdc_ch);
+			ftree->Branch("trail_tdc_ch",&trail_tdc_ch);
+			ftree->Branch("qtc_pmt",&qtc_pmt);
+			ftree->Branch("qdc_pmt",&qdc_pmt);
+			ftree->Branch("qdc_pla",&qdc_pla);
+			ftree->Branch("t_pla",&t_pla);
+			ftree->Branch("tdiff_pla",&tdiff_pla);
+			ftree->Branch("tof_row",&tof_row);
+			ftree->Branch("tof_pattern",&tof_pattern);
+			ftree->Branch("ref_trig_bool",&ref_trig_bool);
+			ftree->Branch("pla_bool",&pla_bool);
+			ftree->Branch("pattern_bool",&pattern_bool);
+			ftree->Branch("pmt_bool",&pmt_bool);
+			ftree->Branch("row_bool",&row_bool);
+			ftree->Branch("veto_bool",&veto_bool);
+			ftree->Branch("sbt_bool",&sbt_bool);
+			ftree->Branch("tof_sbt_pla",&tof_sbt_pla);
+			ftree->Branch("veto_tdc",&veto_tdc);
+			ftree->Branch("sbt_tdc",&sbt_tdc);
+			ftree->Branch("incidence_tdc",&incidence_tdc);
+			ftree->Branch("tof_incidence",&tof_incidence);
+			ftree->Branch("incidence_pla",&incidence_pla);
+			ftree->Branch("ref_tdc",&ref_tdc);
 
 
 
-		BookHistograms();
+			BookHistograms();
 
 			estore = new TArtEventStore();
 			estore->Open(Form("ridf/neotest%04d.ridf",nRun));
@@ -82,7 +82,7 @@ Analyze::Analyze(int nRun, bool force):
 			neve = 0;
 
 			h_test= new TH1D("h_test","h_test",100,-0.5,8.5);
-			while(estore->GetNextEvent()){
+			while(estore->GetNextEvent()&&neve<=1000){
 				std::cout << "\rProcessing Event: " << neve << std::flush;
 				//Initialize
 
@@ -108,9 +108,9 @@ Analyze::Analyze(int nRun, bool force):
 			MakeSTC();
 
 			ftree->Write();
-		fout1->Write();
-		fout1->Close();
-		delete fout1;
+			fout1->Write();
+			fout1->Close();
+			delete fout1;
 		}//force
 
 
@@ -169,10 +169,11 @@ Analyze::Analyze(int nRun, bool force):
 			Clear();
 		}
 
+		ReconstructSTC(3);
 		fin->Close();
-		h_npvertex_basic->Draw("colz");
 		fout2->Write();
 
+		h_npvertex_corr->Draw("colz");
 
 
 
@@ -620,13 +621,13 @@ void Analyze::PrepareForSTC(){
 				h_kv_totprim_s[l]->Fill(maxtot);
 
 				if(grp->At(maxid)->IsAsagi()){
-					h_kv_dtot_l_as[l]->Fill(maxtot-lefttot);
-					h_kv_dtot_r_as[l]->Fill(maxtot-righttot);
+					if(righttot<lefttot){ h_kv_dtot_l_as[l]->Fill(maxtot-lefttot); h_kv_dtot_as[l]->Fill(maxtot-lefttot);}
+					else {  h_kv_dtot_r_as[l]->Fill(maxtot-righttot);  h_kv_dtot_as[l]->Fill(maxtot-righttot); }
 					h_kv_totprim_as[l]->Fill(maxtot);
 				}
-				else{					
-					h_kv_dtot_l_gs[l]->Fill(maxtot-lefttot);
-					h_kv_dtot_r_gs[l]->Fill(maxtot-righttot);
+				else{
+					if(righttot<lefttot){ h_kv_dtot_gs[l]->Fill(maxtot-lefttot); h_kv_dtot_l_gs[l]->Fill(maxtot-lefttot);}
+					else{   h_kv_dtot_r_gs[l]->Fill(maxtot-righttot);  h_kv_dtot_gs[l]->Fill(maxtot-righttot);}
 					h_kv_totprim_gs[l]->Fill(maxtot);
 				}
 
@@ -657,19 +658,18 @@ void Analyze::PrepareForSTC(){
 				h_ku_dtot_l_s[l]->Fill(maxtot-lefttot);
 				h_ku_dtot_r_s[l]->Fill(maxtot-righttot);
 				h_ku_totprim_s[l]->Fill(maxtot);
+
+
 				if(grp->At(maxid)->IsAsagi()){
-					h_ku_dtot_l_as[l]->Fill(maxtot-lefttot);
-					h_ku_dtot_r_as[l]->Fill(maxtot-righttot);
+					if(righttot<lefttot){  h_ku_dtot_l_as[l]->Fill(maxtot-lefttot); h_ku_dtot_as[l]->Fill(maxtot-lefttot);}
+					else {  h_ku_dtot_r_as[l]->Fill(maxtot-righttot);  h_ku_dtot_as[l]->Fill(maxtot-righttot); }
 					h_ku_totprim_as[l]->Fill(maxtot);
 				}
-				else{					
-					h_ku_dtot_l_gs[l]->Fill(maxtot-lefttot);
-					h_ku_dtot_r_gs[l]->Fill(maxtot-righttot);
+				else{
+					if(righttot<lefttot){ h_ku_dtot_gs[l]->Fill(maxtot-lefttot); h_ku_dtot_l_gs[l]->Fill(maxtot-lefttot);}
+					else{   h_ku_dtot_r_gs[l]->Fill(maxtot-righttot);  h_ku_dtot_gs[l]->Fill(maxtot-righttot);}
 					h_ku_totprim_gs[l]->Fill(maxtot);
 				}
-
-
-
 
 			}// mul>=3
 
@@ -863,12 +863,12 @@ void Analyze::MakeDCHits(){
 	myGroups *vgrp = nullptr;
 	myGroups *xgrp = nullptr;
 	for (int l =0 ; l<2;l++){
-vid.clear();
-uid.clear();
-xid.clear();
-x.clear();
-v.clear();
-u.clear();
+		vid.clear();
+		uid.clear();
+		xid.clear();
+		x.clear();
+		v.clear();
+		u.clear();
 
 		//Kv 
 		ngrps = fDCKvGroups[l]->GetEntriesFast(); 
@@ -1004,7 +1004,7 @@ Double_t Analyze::MakePositionCathode(myGroups* grp,int l){
 
 			avg_drf =  (stc_kv_r_g[l][dtot_r]/(double)dtot_r+stc_kv_l_g[l][dtot_l]/(double)dtot_l)/(1/(double)dtot_l +1/(double)dtot_r);
 			pos = strippos + avg_drf;
-		//	pos = strippos + stc_kv_r_g[l][dtot_r]; 
+			//	pos = strippos + stc_kv_r_g[l][dtot_r]; 
 
 		}else{
 			if(dtot_l>difftot_kvmax_asa[l]) dtot_l = difftot_kvmax_asa[l];
@@ -1012,7 +1012,7 @@ Double_t Analyze::MakePositionCathode(myGroups* grp,int l){
 			avg_drf =  (stc_kv_r_a[l][dtot_r]/(double)dtot_r+stc_kv_l_a[l][dtot_l]/(double)dtot_l)/(1/(double)dtot_l +1/(double)dtot_r);
 			pos = strippos + avg_drf;
 
-		//	pos = strippos + stc_kv_r_a[l][dtot_r]; 
+			//	pos = strippos + stc_kv_r_a[l][dtot_r]; 
 
 		}
 
@@ -1024,14 +1024,14 @@ Double_t Analyze::MakePositionCathode(myGroups* grp,int l){
 			if(dtot_r>difftot_kumax_gnd[l]) dtot_r = difftot_kumax_gnd[l];
 			avg_drf =  (stc_ku_r_g[l][dtot_r]/(double)dtot_r+stc_ku_l_g[l][dtot_l]/(double)dtot_l)/(1/(double)dtot_l +1/(double)dtot_r);
 			pos = strippos + avg_drf;
-		//	pos = strippos + stc_ku_r_g[l][dtot_r]; 
+			//	pos = strippos + stc_ku_r_g[l][dtot_r]; 
 
 		}else{
 			if(dtot_l>difftot_kumax_asa[l]) dtot_l = difftot_kumax_asa[l];
 			if(dtot_r>difftot_kumax_asa[l]) dtot_r = difftot_kumax_asa[l];
 			avg_drf =  (stc_ku_r_a[l][dtot_r]/(double)dtot_r+stc_ku_l_a[l][dtot_l]/(double)dtot_l)/(1/(double)dtot_l +1/(double)dtot_r);
 			pos = strippos + avg_drf;
-		//	pos = strippos + stc_ku_r_a[l][dtot_r]; 
+			//	pos = strippos + stc_ku_r_a[l][dtot_r]; 
 
 		}
 
@@ -1074,9 +1074,9 @@ void Analyze::MakeTracks(){
 		myTrack* track = (myTrack*)ftracks->ConstructedAt(ftracks->GetEntriesFast());
 		track->SetDC1evt((myDCevt*)fDCevts[0]->At(ieve1));
 		dcevt = (myDCevt*)fDCevts[0]->At(ieve1);
-		track->SetX1ID(dcevt->GetXID());
-		track->SetV1ID(dcevt->GetVID());
-		track->SetU1ID(dcevt->GetUID());
+		track->SetXID(0,dcevt->GetXID());
+		track->SetVID(0,dcevt->GetVID());
+		track->SetUID(0,dcevt->GetUID());
 		track->SetConvPos(fl1pos);
 		track->SetCatPos(fl2pos);
 		for (int ieve2 = 0; ieve2< n_dceve[1]; ieve2++){
@@ -1084,9 +1084,9 @@ void Analyze::MakeTracks(){
 			track->SetDC2evt((myDCevt*)fDCevts[1]->At(ieve2));	
 
 			dcevt = (myDCevt*)fDCevts[1]->At(ieve2);
-			track->SetX2ID(dcevt->GetXID());
-			track->SetV2ID(dcevt->GetVID());
-			track->SetU2ID(dcevt->GetUID());
+			track->SetXID(1,dcevt->GetXID());
+			track->SetVID(1,dcevt->GetVID());
+			track->SetUID(1,dcevt->GetUID());
 			track->Calibrate();
 
 			bool fconv =false;
@@ -1123,7 +1123,7 @@ void Analyze::MakeTracks(){
 					ftracks->RemoveAt(ftracks->GetEntriesFast()-1);
 				ftracks_cum->RemoveAt(cum_index);
 			}else{
-			
+
 			}
 
 
@@ -1135,45 +1135,174 @@ void Analyze::MakeTracks(){
 	ftracks_cum->Compress();
 
 	//if(ftracks->GetEntriesFast()>1) std::cout<<((myTrack*)ftracks->At(0))->GetConvID()<<" "<<((myTrack*)ftracks->At(1))->GetConvID()<<std::endl;
-if(ftracks->GetEntriesFast()>1){
-myTrack* tr1 = (myTrack*)ftracks->At(0);
-myTrack* tr2 = (myTrack*)ftracks->At(1);
+	if(ftracks->GetEntriesFast()>1){
+		myTrack* tr1 = (myTrack*)ftracks->At(0);
+		myTrack* tr2 = (myTrack*)ftracks->At(1);
 
-std::cout<<(tr1->GetnpVertex()-tr2->GetnpVertex()).Mag()<<std::endl;
-}
+		//std::cout<<(tr1->GetnpVertex()-tr2->GetnpVertex()).Mag()<<std::endl;
+	}
 
 }
 ///////////////////////////////
 
-void Analyze::ReconstructSTC(int niter =50){
+void Analyze::ReconstructSTC(int niter){
 
 	Int_t ntracks = ftracks_cum->GetEntriesFast();
+	std::cout<<1<< " "<<ntracks<<std::endl;
 	myTrack* track = nullptr;
+
+	myDCHitPara *para = nullptr;
 	for(int iter = 0; iter<niter; iter++){
 		ClearSTCHist();
 		ClearSTC();
 		MakeSTC();
+if(iter>= niter-2){
+
+			h_npvertex_corr->Reset();
+}
 		for(int itra=0; itra<ntracks; itra++){
-track = (myTrack*)ftracks_cum->At(itra);
-			if(track->GetZAngle()<TMath::Pi()/180.){	
+			track = (myTrack*)ftracks_cum->At(itra);
+
+			/*Make Position on Cathode and potential*/
+
+				std::cout<<"Y Angle "<<track->GetYAngle()<<std::endl;
+			ModifyTrack(track);
+
+				std::cout<<track->GetYAngle()*180./TMath::Pi()<<std::endl;
+				if(TMath::Abs(track->GetYAngle())<2*TMath::Pi()/180.){
+				for(int l =0; l<2;l++){	
+					para = const_cast<myDCHitPara*>(FindDCHitPara(track->GetVID(l)));
+					Bool_t asagiv = para->GetIsAsagi();
+					int diff_r = track->GetVRdtot(l); 	
+					int diff_l = track->GetVLdtot(l); 
+					
+					
+					if(asagiv)	
+						if(diff_l<diff_r)h_kv_dtot_l_as[l]->Fill(diff_l);
+						else h_kv_dtot_r_as[l]->Fill(diff_r);
+					else 
+						if(diff_l<diff_r)h_kv_dtot_l_gs[l]->Fill(diff_l);
+						else h_kv_dtot_r_gs[l]->Fill(diff_r);
+
+					para = const_cast<myDCHitPara*>(FindDCHitPara(track->GetUID(l)));
+					Bool_t asagiu = para->GetIsAsagi();
+					diff_r = track->GetURdtot(l); 	
+					diff_l = track->GetULdtot(l); 	
+					if(asagiu)	
+						if(diff_l<diff_r)h_ku_dtot_l_as[l]->Fill(diff_l);
+						else h_ku_dtot_r_as[l]->Fill(diff_r);
+					else 
+						if(diff_l<diff_r)h_ku_dtot_l_gs[l]->Fill(diff_l);
+						else h_ku_dtot_r_gs[l]->Fill(diff_r);
+
+				}	
 
 
-			}	
 
+			}
 
+			if(TMath::Abs(track->GetXAngle())<2*TMath::Pi()/180.){	
+				for(int l =0; l<2; l++){
+					para = const_cast<myDCHitPara*>(FindDCHitPara(track->GetXID(l)));
+					Bool_t asagix = para->GetIsAsagi();
+					Int_t mintdc = track->GetXtdc(l); 
+					h_kp_tdcprim_s[l]->Fill(mintdc);
+					if(asagix){
+						h_kp_tdcprim_as[l]->Fill(mintdc);
+					}
+					else{
+						h_kp_tdcprim_gs[l]->Fill(mintdc);}
+				}	
+
+			}
+
+if(iter>=niter-2){
+			h_npvertex_corr->Fill(track->GetnpVertex().X(), track->GetnpVertex().Y());
+}
 		}//Loop over All Tracks
 
 
-		ClearSTC();
-		MakeSTC();
+	//	ClearSTC();
+	//	MakeSTC();
 	}
 
 
 
 }
 //////////////////////////////
+void Analyze::ModifyTrack(myTrack* track){
+	myDCHitPara* para = nullptr;
+	double posv,posu,posx,posy,avg_drf;
+	if (!track) {
+    std::cerr << "Error: track pointer is null!" << std::endl;
+    return;
+}
+	for(int l =0; l<2;l++){
+		para = const_cast<myDCHitPara*>(FindDCHitPara(track->GetVID(l)));
+		Bool_t asagiv = para->GetIsAsagi();
+		int dtot_r = track->GetVRdtot(l);
+		int dtot_l = track->GetVLdtot(l);
+		double strippos = para->GetWireZPosition();
 
+		if(asagiv){
+			if(dtot_l>difftot_kvmax_asa[l]) dtot_l = difftot_kvmax_asa[l];
+			if(dtot_r>difftot_kvmax_asa[l]) dtot_r = difftot_kvmax_asa[l];
+
+			avg_drf =  (stc_kv_r_a[l][dtot_r]/(double)dtot_r+stc_kv_l_a[l][dtot_l]/(double)dtot_l)/(1/(double)dtot_l +1/(double)dtot_r);
+			posv = strippos + avg_drf;
+
+		}
+		else{
+			if(dtot_l>difftot_kvmax_gnd[l]) dtot_l = difftot_kvmax_gnd[l];
+			if(dtot_r>difftot_kvmax_gnd[l]) dtot_r = difftot_kvmax_gnd[l];
+
+			avg_drf =  (stc_kv_r_g[l][dtot_r]/(double)dtot_r+stc_kv_l_g[l][dtot_l]/(double)dtot_l)/(1/(double)dtot_l +1/(double)dtot_r);
+			posv = strippos + avg_drf;
+
+		}//V pos
+                para = const_cast<myDCHitPara*>(FindDCHitPara(track->GetUID(l)));
+                Bool_t asagiu = para->GetIsAsagi();
+                 dtot_r = track->GetURdtot(l);
+                 dtot_l = track->GetULdtot(l);
+		 //std::cout<<dtot_r<<" "<<dtot_l<<std::endl;
+                 strippos = para->GetWireZPosition();
+                if(asagiu){
+                        if(dtot_l>difftot_kumax_asa[l]) dtot_l = difftot_kumax_asa[l];
+                        if(dtot_r>difftot_kumax_asa[l]) dtot_r = difftot_kumax_asa[l];
+
+                        avg_drf =  (stc_ku_r_a[l][dtot_r]/(double)dtot_r+stc_ku_l_a[l][dtot_l]/(double)dtot_l)/(1/(double)dtot_l +1/(double)dtot_r);
+                        posu = strippos + avg_drf;
+
+                }
+                else{
+                        if(dtot_l>difftot_kumax_gnd[l]) dtot_l = difftot_kumax_gnd[l];
+                        if(dtot_r>difftot_kumax_gnd[l]) dtot_r = difftot_kumax_gnd[l];
+
+                        avg_drf =  (stc_ku_r_g[l][dtot_r]/(double)dtot_r+stc_ku_l_g[l][dtot_l]/(double)dtot_l)/(1/(double)dtot_l +1/(double)dtot_r);
+                        posu = strippos + avg_drf;
+
+                }//U pos
+
+posy = (posu-posv)/TMath::Sqrt(2);
+                para = const_cast<myDCHitPara*>(FindDCHitPara(track->GetXID(l)));
+		Bool_t asagix = para->GetIsAsagi();
+                int tdc = track->GetXtdc(l);
+	       	strippos = para->GetWireZPosition();
+
+		Double_t x_drift = CalcDriftLenPot( tdc,  l);
+		posx = strippos+ x_drift;
+	//	std::cout<<posx<<" "<<posy<<std::endl;
+		//std::cout<<posx<<" "<<posy<<" "<<para->GetWireZPosition()<<std::endl;	
+		track->SetDCHit(l,TVector3(posx,posy,para->GetWireZPosition()));
+	}// layers
+
+	track->Calibrate();
+
+}
+//////////////////////////////
 void Analyze::ReconstructTracks(){
+
+
 
 
 }
@@ -1189,6 +1318,15 @@ const myDCHitPara* Analyze::FindDCHitPara(TArtRIDFMap *rmap) const
 	else return 0;
 }
 /////////////////////////////////////
+const myDCHitPara* Analyze::FindDCHitPara(Int_t id) const
+{
+	for (const auto& entry : dc_pmap) {
+		if (entry.second->GetID() == id)
+			return entry.second;
+	}
+	return nullptr;
+}
+///////////////////////////////////////
 bool Analyze::LoadParameters(const char *xmlfile){
 	TArtCore::Info(__FILE__,"Load parameter from %s", xmlfile);
 	TDOMParser domParser;
@@ -1409,6 +1547,9 @@ void Analyze::ClearSTCHist(){
 		h_ku_dtot_l_as[l]->Reset();
 		h_ku_dtot_r_as[l]->Reset();
 		h_kp_tdcprim_s[l]->Reset(); 
+		h_kp_tdcprim_as[l]->Reset();
+		h_kp_tdcprim_gs[l]->Reset();
+		h_kp_tdcprim_as[l]->Reset();
 	}
 
 }
@@ -1442,7 +1583,10 @@ void Analyze::BookHistograms(){
 		h_ku_dtot_l_as[l] = new TH1I(Form("h_ku_dtot_l_asa_s%d",l+1),Form("diff ToT Left Ku ASAGI NEOLITH-s %d",l+1),450,0,10000);
 		h_kv_dtot_r_as[l] = new TH1I(Form("h_kv_dtot_r_asa_s%d",l+1),Form("diff ToT Right Kv ASAGI NEOLITH-s %d",l+1),450,0,10000);
 		h_ku_dtot_r_as[l] = new TH1I(Form("h_ku_dtot_r_asa_s%d",l+1),Form("diff ToT Right Ku ASAGI NEOLITH-s %d",l+1),450,0,10000);
-
+		h_ku_dtot_as[l] = new TH1I(Form("h_ku_dtot_asa_s%d",l+1),Form("diff ToT  Ku ASAGI NEOLITH-s %d",l+1),450,0,10000);
+		h_kv_dtot_as[l] = new TH1I(Form("h_kv_dtot_asa_s%d",l+1),Form("diff ToT  Kv ASAGI NEOLITH-s %d",l+1),450,0,10000);
+		h_ku_dtot_gs[l] = new TH1I(Form("h_ku_dtot_gnd_s%d",l+1),Form("diff ToT  Ku GND NEOLITH-s %d",l+1),450,0,10000);
+		h_kv_dtot_gs[l] = new TH1I(Form("h_kv_dtot_gnd_s%d",l+1),Form("diff ToT  Kv GND NEOLITH-s %d",l+1),450,0,10000);
 		h_kp_dw_as[l] = new TH1I(Form("h_kp_dw_asa_s%d",l+1),Form("dW KP Asagi NEOLITH-s%d",l+1),500,-2000,2000);	
 		h_kp_dw_gs[l] = new TH1I(Form("h_kp_dw_gnd_s%d",l+1),Form("dW KP GND NEOLITH-s%d",l+1),500,-2000,2000);	
 		h_kp_dw_s[l] = new TH1I(Form("h_kp_dw_s%d",l+1),Form("dW KP NEOLITH-s%d",l+1),500,-2000,2000);	
@@ -1463,6 +1607,7 @@ void Analyze::BookHistograms(){
 	}
 
 	h_npvertex_basic = new TH2D("h_npvertex_basic","N-P Vertex at Middle of Layer1 before any correction",250,-300,300,250,-300,300);
+	h_npvertex_corr = new TH2D("h_npvertex_corr","N-P Vertex at Middle of Layer1 after correction",250,-300,300,250,-300,300);
 
 }
 
