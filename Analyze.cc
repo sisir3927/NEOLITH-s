@@ -180,7 +180,7 @@ Analyze::Analyze(int nRun, bool force):
 
 		BookHistograms();
 
-		ReconstructSTC(50);
+		//ReconstructSTC(0);
 
 	std::cout<<"------------------------------------------------------------------"<<std::endl;
 	for (Long64_t i=0; i<ftreein->GetEntries(); ++i) {
@@ -651,13 +651,13 @@ void Analyze::PrepareForSTC(){
 				h_kv_totprim_s[l]->Fill(maxtot);
 
 				if(grp->At(maxid)->IsAsagi()){
-					if(righttot<lefttot){ h_kv_dtot_l_as[l]->Fill(maxtot-lefttot); h_kv_dtot_as[l]->Fill(maxtot-lefttot);}
-					else {  h_kv_dtot_r_as[l]->Fill(maxtot-righttot);  h_kv_dtot_as[l]->Fill(maxtot-righttot); }
+					{ h_kv_dtot_l_as[l]->Fill(maxtot-lefttot); h_kv_dtot_as[l]->Fill(maxtot-lefttot);}
+					{  h_kv_dtot_r_as[l]->Fill(maxtot-righttot);  h_kv_dtot_as[l]->Fill(maxtot-righttot); }
 					h_kv_totprim_as[l]->Fill(maxtot);
 				}
 				else{
-					if(righttot<lefttot){ h_kv_dtot_gs[l]->Fill(maxtot-lefttot); h_kv_dtot_l_gs[l]->Fill(maxtot-lefttot);}
-					else{   h_kv_dtot_r_gs[l]->Fill(maxtot-righttot);  h_kv_dtot_gs[l]->Fill(maxtot-righttot);}
+					{ h_kv_dtot_gs[l]->Fill(maxtot-lefttot); h_kv_dtot_l_gs[l]->Fill(maxtot-lefttot);}
+					{   h_kv_dtot_r_gs[l]->Fill(maxtot-righttot);  h_kv_dtot_gs[l]->Fill(maxtot-righttot);}
 					h_kv_totprim_gs[l]->Fill(maxtot);
 				}
 
@@ -691,13 +691,13 @@ void Analyze::PrepareForSTC(){
 
 
 				if(grp->At(maxid)->IsAsagi()){
-					if(righttot<lefttot){  h_ku_dtot_l_as[l]->Fill(maxtot-lefttot); h_ku_dtot_as[l]->Fill(maxtot-lefttot);}
-					else {  h_ku_dtot_r_as[l]->Fill(maxtot-righttot);  h_ku_dtot_as[l]->Fill(maxtot-righttot); }
+					{  h_ku_dtot_l_as[l]->Fill(maxtot-lefttot); h_ku_dtot_as[l]->Fill(maxtot-lefttot);}
+					 {  h_ku_dtot_r_as[l]->Fill(maxtot-righttot);  h_ku_dtot_as[l]->Fill(maxtot-righttot); }
 					h_ku_totprim_as[l]->Fill(maxtot);
 				}
 				else{
-					if(righttot<lefttot){ h_ku_dtot_gs[l]->Fill(maxtot-lefttot); h_ku_dtot_l_gs[l]->Fill(maxtot-lefttot);}
-					else{   h_ku_dtot_r_gs[l]->Fill(maxtot-righttot);  h_ku_dtot_gs[l]->Fill(maxtot-righttot);}
+					{ h_ku_dtot_gs[l]->Fill(maxtot-lefttot); h_ku_dtot_l_gs[l]->Fill(maxtot-lefttot);}
+					{   h_ku_dtot_r_gs[l]->Fill(maxtot-righttot);  h_ku_dtot_gs[l]->Fill(maxtot-righttot);}
 					h_ku_totprim_gs[l]->Fill(maxtot);
 				}
 
@@ -1171,7 +1171,8 @@ void Analyze::MakeTracks(){
 	if(ftracks->GetEntriesFast()>1){
 		myTrack* tr1 = (myTrack*)ftracks->At(0);
 		myTrack* tr2 = (myTrack*)ftracks->At(1);
-
+		Double_t dist =(tr1->GetnpVertex()-tr2->GetnpVertex()).Mag() ;
+		if(((myTrack*)ftracks->At(0))->GetConvID() ==((myTrack*)ftracks->At(1))->GetConvID() && dist!=0 )h_dist_vertex->Fill(dist);
 		std::cout<<(tr1->GetnpVertex()-tr2->GetnpVertex()).Mag()<<std::endl;
 	}
 }
@@ -1207,23 +1208,23 @@ if(iter>= niter-2){
 					
 					
 					if(asagiv)	
-						if(diff_l<diff_r)h_kv_dtot_l_as[l]->Fill(diff_l);
-						else h_kv_dtot_r_as[l]->Fill(diff_r);
-					else 
-						if(diff_l<diff_r)h_kv_dtot_l_gs[l]->Fill(diff_l);
-						else h_kv_dtot_r_gs[l]->Fill(diff_r);
-
+					{h_kv_dtot_l_as[l]->Fill(diff_l);
+						 h_kv_dtot_r_as[l]->Fill(diff_r);
+					}else 
+					{	h_kv_dtot_l_gs[l]->Fill(diff_l);
+						 h_kv_dtot_r_gs[l]->Fill(diff_r);
+					}
 					para = const_cast<myDCHitPara*>(FindDCHitPara(track->GetUID(l)));
 					Bool_t asagiu = para->GetIsAsagi();
 					diff_r = track->GetURdtot(l); 	
 					diff_l = track->GetULdtot(l); 	
 					if(asagiu)	
-						if(diff_l<diff_r)h_ku_dtot_l_as[l]->Fill(diff_l);
-						else h_ku_dtot_r_as[l]->Fill(diff_r);
-					else 
-						if(diff_l<diff_r)h_ku_dtot_l_gs[l]->Fill(diff_l);
-						else h_ku_dtot_r_gs[l]->Fill(diff_r);
-
+					{	h_ku_dtot_l_as[l]->Fill(diff_l);
+					 h_ku_dtot_r_as[l]->Fill(diff_r);
+					}else 
+					{	h_ku_dtot_l_gs[l]->Fill(diff_l);
+						 h_ku_dtot_r_gs[l]->Fill(diff_r);
+					}
 				}	
 
 
@@ -1637,7 +1638,7 @@ void Analyze::BookHistograms(){
 
 	h_npvertex_basic = new TH2D("h_npvertex_basic","N-P Vertex at Middle of Layer1 before any correction",250,-300,300,250,-300,300);
 	h_npvertex_corr = new TH2D("h_npvertex_corr","N-P Vertex at Middle of Layer1 after correction",250,-300,300,250,-300,300);
-
+h_dist_vertex = new TH1D("h_dist_vertex","Distance between Common Vertex",100,0,200);
 }
 
 

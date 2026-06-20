@@ -283,6 +283,8 @@ class Analyze{
 		TH1* h_kv_dtot_r_corr_as[2];
 		TH1* h_ku_dtot_r_corr_as[2];
 
+		TH1* h_dist_vertex;
+
 		TFile* f;
 		TTree* tree;
 };
