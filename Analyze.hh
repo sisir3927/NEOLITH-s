@@ -235,6 +235,10 @@ class Analyze{
 		TH1* h_kp_tdcprim_s[2];
 		TH1* h_kp_tdcprim_gs[2];
 		TH1* h_kp_tdcprim_as[2];
+		TH1* h_kp_t1t2_as[2];
+		TH1* h_kp_t1t2_gs[2];
+		TH1* h_kp_dtdw_as[2];
+		TH1* h_kp_dtdw_gs[2];
 		TH1* h_kv_totid_s[2];
 		TH1* h_ku_totid_s[2];
 		TH1* h_kp_tdcid_s[2];
@@ -269,10 +273,14 @@ class Analyze{
 		TH1* h_driflen_kv_l_gs[2];
 		TH1* h_driflen_kv_r_as[2];
 		TH1* h_driflen_kv_r_gs[2];
+		TH1* h_driflen_dchit_s[2];
+
+		TH1* h_XY_s[2];
 
 		TH1 *h_npvertex_basic;	
 		TH1 *h_npvertex_corr;	
-
+		TH1 *h_npvertex_b1;
+		TH1 *h_npvertex_b2;
 		TH1* h_kp_tdcprim_corr_s[2];
 		TH1* h_kv_dtot_l_corr_gs[2];
 		TH1* h_ku_dtot_l_corr_gs[2];
@@ -284,6 +292,7 @@ class Analyze{
 		TH1* h_ku_dtot_r_corr_as[2];
 
 		TH1* h_dist_vertex;
+		TH1* h_dxdy_vertex;
 
 		TFile* f;
 		TTree* tree;
