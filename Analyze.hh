@@ -39,7 +39,7 @@ class Analyze{
 		void PrepareForSTC();
 		void MakeSTC();
 		Double_t MakePositionCathode(myGroups* dcstripgroup, int l); //Input Should be Group
-		Double_t CalcDriftLenPot(int tdc, int l);
+		Double_t CalcDriftLenPot(int tdc, int l,bool asa);
 		void MakeDCPosition(TClonesArray *KUgroups,TClonesArray *KVgrousp,  TVector3 *dcpos); // 
 		void MakeTracks(); //Make Tracks and plot 
 		void ReconstructSTC(int niter);
@@ -189,13 +189,17 @@ class Analyze{
 		const int tdc_init = -99999;
 		const std::vector<int>qdc_ped =  {55,13,57,27,66,49,48,55,60,68,65,67};
 
-		static constexpr int difftot_kumax_asa[2] = {3200,3200};
-		static constexpr int difftot_kvmax_asa[2] = {3200,3200};
+		static constexpr int difftot_kumax_asa[2] = {4200,4200};
+		static constexpr int difftot_kvmax_asa[2] = {4200,4200};
 		static constexpr int difftot_kumax_gnd[2] = {3000,3000};
 		static constexpr int difftot_kvmax_gnd[2] = {3000,3000};
 
 		static constexpr int tdcprim_kpmax [2]= {00,0};
 		static constexpr int tdcprim_kpmin [2]= {-2600,-2600};
+		static constexpr int tdcprim_kpmax_asa[2]= {00,0};
+		static constexpr int tdcprim_kpmin_asa[2]= {-2600,-2600};
+		static constexpr int tdcprim_kpmax_gnd [2]= {00,0};
+		static constexpr int tdcprim_kpmin_gnd[2]= {-2600,-2600};
 
 		/*double stc_kv_l_a[2][difftot_kvmax_asa[0]+1];
 		  double stc_kv_l_g[2][difftot_kvmax_gnd[0]+1];;
@@ -218,6 +222,8 @@ class Analyze{
 		std::vector<std::vector<double>> stc_ku_r_g{2, std::vector<double>(difftot_kumax_gnd[0] + 1)};
 
 		std::vector<std::vector<double>> stc_kp{2, std::vector<double>(tdcprim_kpmax[0] - tdcprim_kpmin[0] + 1)};
+		std::vector<std::vector<double>> stc_kp_g{2, std::vector<double>(tdcprim_kpmax_gnd[0] - tdcprim_kpmin_gnd[0] + 1)};
+		std::vector<std::vector<double>> stc_kp_a{2, std::vector<double>(tdcprim_kpmax_asa[0] - tdcprim_kpmin_asa[0] + 1)};
 		const int niter_stc = 50;
 
 		const std::vector<double> y_pla={100,0,-100,100,0,-100};
@@ -265,6 +271,8 @@ class Analyze{
 
 
 		TH1* h_driflen_kp_s[2];
+		TH1* h_driflen_kp_gs[2];
+		TH1* h_driflen_kp_as[2];
 		TH1* h_driflen_ku_l_as[2];
 		TH1* h_driflen_ku_l_gs[2];
 		TH1* h_driflen_ku_r_as[2];
