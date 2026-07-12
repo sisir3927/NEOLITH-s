@@ -194,12 +194,12 @@ class Analyze{
 		static constexpr int difftot_kumax_gnd[2] = {3000,3000};
 		static constexpr int difftot_kvmax_gnd[2] = {3000,3000};
 
-		static constexpr int tdcprim_kpmax [2]= {00,0};
-		static constexpr int tdcprim_kpmin [2]= {-2600,-2600};
-		static constexpr int tdcprim_kpmax_asa[2]= {00,0};
-		static constexpr int tdcprim_kpmin_asa[2]= {-2600,-2600};
-		static constexpr int tdcprim_kpmax_gnd [2]= {00,0};
-		static constexpr int tdcprim_kpmin_gnd[2]= {-2600,-2600};
+		static constexpr int tdcprim_kpmax [2]= {3000,3000};
+		static constexpr int tdcprim_kpmin [2]= {-1800,-1800};
+		static constexpr int tdcprim_kpmax_asa[2]= {2600,2600};
+		static constexpr int tdcprim_kpmin_asa[2]= {-1800,-1800};
+		static constexpr int tdcprim_kpmax_gnd [2]= {1000,1000};
+		static constexpr int tdcprim_kpmin_gnd[2]= {-1800,-1800};
 
 		/*double stc_kv_l_a[2][difftot_kvmax_asa[0]+1];
 		  double stc_kv_l_g[2][difftot_kvmax_gnd[0]+1];;
@@ -229,6 +229,7 @@ class Analyze{
 		const std::vector<double> y_pla={100,0,-100,100,0,-100};
 		const std::vector<double> z_pla={-124.95,-124.95,-124.95,124.95,124.95,124.95};
 
+		bool stc_make_kv;
 
 		TH1* h_test;
 		TH1* h_kv_totprim_s[2];
@@ -284,11 +285,14 @@ class Analyze{
 		TH1* h_driflen_dchit_s[2];
 
 		TH1* h_XY_s[2];
+		TH1* h_XYcath_s[2];
 
 		TH1 *h_npvertex_basic;	
 		TH1 *h_npvertex_corr;	
 		TH1 *h_npvertex_b1;
 		TH1 *h_npvertex_b2;
+		TH1 *h_npvertex_a1;
+		TH1 *h_npvertex_a2;
 		TH1* h_kp_tdcprim_corr_s[2];
 		TH1* h_kv_dtot_l_corr_gs[2];
 		TH1* h_ku_dtot_l_corr_gs[2];

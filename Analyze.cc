@@ -42,7 +42,7 @@ Analyze::Analyze(int nRun, bool force):
 		int neve =0;
 
 		if(force){
-			TFile *fout1 = new TFile (Form("root/sisir/Ana_Data_%d.root",nRun), "RECREATE");
+			TFile *fout1 = new TFile (Form("root/sisir/Ana_Data_%d_v6.root",nRun), "RECREATE");
 			TTree* ftree = new TTree("Hit_Tree", "Data Hit Information");
 
 			ftree->Branch("fDCWireHits",&fDCWireHits);
@@ -82,7 +82,7 @@ Analyze::Analyze(int nRun, bool force):
 			neve = 0;
 
 			h_test= new TH1D("h_test","h_test",100,-0.5,8.5);
-			while(estore->GetNextEvent()&&neve<=1000000000){
+			while(estore->GetNextEvent()&&neve<=100000){
 				std::cout << "\rProcessing Event: " << neve << std::flush;
 				//Initialize
 
@@ -104,9 +104,9 @@ Analyze::Analyze(int nRun, bool force):
 
 			}//estore
 			Clear();
-
+			stc_make_kv =true;
 			MakeSTC();
-
+	
 			ftree->Write();
 			fout1->Write();
 			fout1->Close();
@@ -115,7 +115,7 @@ Analyze::Analyze(int nRun, bool force):
 
 
 
-		TFile *fin = new TFile (Form("root/sisir/Ana_Data_%d.root",nRun), "READ");
+		TFile *fin = new TFile (Form("root/sisir/Ana_Data_%d_v6.root",nRun), "READ");
 
 		std::cout <<" READING INPUT File"<<std::endl;
 		TTree *ftreein;
@@ -146,48 +146,48 @@ Analyze::Analyze(int nRun, bool force):
 		ftreein->SetBranchAddress("tof_incidence",&tof_incidence_in);
 		ftreein->SetBranchAddress("incidence_pla",&incidence_pla);
 		ftreein->SetBranchAddress("ref_tdc",&ref_tdc_in);
-/*
-		for (int l = 0; l < 2; ++l) {
-			h_kp_tdcprim_s[l]   = (TH1I*)fin->Get(Form("h_kp_tdcprim_s%d", l+1));
-			h_kp_tdcprim_gs[l]  = (TH1I*)fin->Get(Form("h_kp_tdcprim_gnd_s%d", l+1));
-			h_kp_tdcprim_as[l]  = (TH1I*)fin->Get(Form("h_kp_tdcprim_asa_s%d", l+1));
+		/*
+		   for (int l = 0; l < 2; ++l) {
+		   h_kp_tdcprim_s[l]   = (TH1I*)fin->Get(Form("h_kp_tdcprim_s%d", l+1));
+		   h_kp_tdcprim_gs[l]  = (TH1I*)fin->Get(Form("h_kp_tdcprim_gnd_s%d", l+1));
+		   h_kp_tdcprim_as[l]  = (TH1I*)fin->Get(Form("h_kp_tdcprim_asa_s%d", l+1));
 
-			h_kv_totid_s[l]     = (TH2I*)fin->Get(Form("h_kv_totid_s%d", l+1));
-			h_ku_totid_s[l]     = (TH2I*)fin->Get(Form("h_ku_totid_s%d", l+1));
-			h_kp_tdcid_s[l]     = (TH2I*)fin->Get(Form("h_kp_tdcid_s%d", l+1));
+		   h_kv_totid_s[l]     = (TH2I*)fin->Get(Form("h_kv_totid_s%d", l+1));
+		   h_ku_totid_s[l]     = (TH2I*)fin->Get(Form("h_ku_totid_s%d", l+1));
+		   h_kp_tdcid_s[l]     = (TH2I*)fin->Get(Form("h_kp_tdcid_s%d", l+1));
 
-			h_kv_dtot_l_s[l]    = (TH1I*)fin->Get(Form("h_kv_dtot_l_s%d", l+1));
-			h_ku_dtot_l_s[l]    = (TH1I*)fin->Get(Form("h_ku_dtot_l_s%d", l+1));
-			h_kv_dtot_r_s[l]    = (TH1I*)fin->Get(Form("h_kv_dtot_r_s%d", l+1));
-			h_ku_dtot_r_s[l]    = (TH1I*)fin->Get(Form("h_ku_dtot_r_s%d", l+1));
+		   h_kv_dtot_l_s[l]    = (TH1I*)fin->Get(Form("h_kv_dtot_l_s%d", l+1));
+		   h_ku_dtot_l_s[l]    = (TH1I*)fin->Get(Form("h_ku_dtot_l_s%d", l+1));
+		   h_kv_dtot_r_s[l]    = (TH1I*)fin->Get(Form("h_kv_dtot_r_s%d", l+1));
+		   h_ku_dtot_r_s[l]    = (TH1I*)fin->Get(Form("h_ku_dtot_r_s%d", l+1));
 
-			h_kv_dtot_l_gs[l]   = (TH1I*)fin->Get(Form("h_kv_dtot_l_gnd_s%d", l+1));
-			h_ku_dtot_l_gs[l]   = (TH1I*)fin->Get(Form("h_ku_dtot_l_gnd_s%d", l+1));
-			h_kv_dtot_r_gs[l]   = (TH1I*)fin->Get(Form("h_kv_dtot_r_gnd_s%d", l+1));
-			h_ku_dtot_r_gs[l]   = (TH1I*)fin->Get(Form("h_ku_dtot_r_gnd_s%d", l+1));
+		   h_kv_dtot_l_gs[l]   = (TH1I*)fin->Get(Form("h_kv_dtot_l_gnd_s%d", l+1));
+		   h_ku_dtot_l_gs[l]   = (TH1I*)fin->Get(Form("h_ku_dtot_l_gnd_s%d", l+1));
+		   h_kv_dtot_r_gs[l]   = (TH1I*)fin->Get(Form("h_kv_dtot_r_gnd_s%d", l+1));
+		   h_ku_dtot_r_gs[l]   = (TH1I*)fin->Get(Form("h_ku_dtot_r_gnd_s%d", l+1));
 
-			h_kv_dtot_l_as[l]   = (TH1I*)fin->Get(Form("h_kv_dtot_l_asa_s%d", l+1));
-			h_ku_dtot_l_as[l]   = (TH1I*)fin->Get(Form("h_ku_dtot_l_asa_s%d", l+1));
-			h_kv_dtot_r_as[l]   = (TH1I*)fin->Get(Form("h_kv_dtot_r_asa_s%d", l+1));
-			h_ku_dtot_r_as[l]   = (TH1I*)fin->Get(Form("h_ku_dtot_r_asa_s%d", l+1));
+		   h_kv_dtot_l_as[l]   = (TH1I*)fin->Get(Form("h_kv_dtot_l_asa_s%d", l+1));
+		   h_ku_dtot_l_as[l]   = (TH1I*)fin->Get(Form("h_ku_dtot_l_asa_s%d", l+1));
+		   h_kv_dtot_r_as[l]   = (TH1I*)fin->Get(Form("h_kv_dtot_r_asa_s%d", l+1));
+		   h_ku_dtot_r_as[l]   = (TH1I*)fin->Get(Form("h_ku_dtot_r_asa_s%d", l+1));
 
-			h_ku_dtot_as[l]     = (TH1I*)fin->Get(Form("h_ku_dtot_asa_s%d", l+1));
-			h_kv_dtot_as[l]     = (TH1I*)fin->Get(Form("h_kv_dtot_asa_s%d", l+1));
-			h_ku_dtot_gs[l]     = (TH1I*)fin->Get(Form("h_ku_dtot_gnd_s%d", l+1));
-			h_kv_dtot_gs[l]     = (TH1I*)fin->Get(Form("h_kv_dtot_gnd_s%d", l+1));
-			h_driflen_kp_s[l]      = (TH1D*)fin->Get(Form("h_driflen_kp_s%d", l+1));
-			h_driflen_kv_l_as[l]   = (TH1D*)fin->Get(Form("h_driflen_kv_l_as%d", l+1));
-			h_driflen_kv_l_gs[l]   = (TH1D*)fin->Get(Form("h_driflen_kv_l_gs%d", l+1));
-			h_driflen_kv_r_as[l]   = (TH1D*)fin->Get(Form("h_driflen_kv_r_as%d", l+1));
-			h_driflen_kv_r_gs[l]   = (TH1D*)fin->Get(Form("h_driflen_kv_r_gs%d", l+1));
-			h_driflen_ku_l_as[l]   = (TH1D*)fin->Get(Form("h_driflen_ku_l_as%d", l+1));
-			h_driflen_ku_l_gs[l]   = (TH1D*)fin->Get(Form("h_driflen_ku_l_gs%d", l+1));
-			h_driflen_ku_r_as[l]   = (TH1D*)fin->Get(Form("h_driflen_ku_r_as%d", l+1));
-			h_driflen_ku_r_gs[l]   = (TH1D*)fin->Get(Form("h_driflen_ku_r_gs%d", l+1));
+		   h_ku_dtot_as[l]     = (TH1I*)fin->Get(Form("h_ku_dtot_asa_s%d", l+1));
+		   h_kv_dtot_as[l]     = (TH1I*)fin->Get(Form("h_kv_dtot_asa_s%d", l+1));
+		   h_ku_dtot_gs[l]     = (TH1I*)fin->Get(Form("h_ku_dtot_gnd_s%d", l+1));
+		   h_kv_dtot_gs[l]     = (TH1I*)fin->Get(Form("h_kv_dtot_gnd_s%d", l+1));
+		   h_driflen_kp_s[l]      = (TH1D*)fin->Get(Form("h_driflen_kp_s%d", l+1));
+		   h_driflen_kv_l_as[l]   = (TH1D*)fin->Get(Form("h_driflen_kv_l_as%d", l+1));
+		   h_driflen_kv_l_gs[l]   = (TH1D*)fin->Get(Form("h_driflen_kv_l_gs%d", l+1));
+		   h_driflen_kv_r_as[l]   = (TH1D*)fin->Get(Form("h_driflen_kv_r_as%d", l+1));
+		   h_driflen_kv_r_gs[l]   = (TH1D*)fin->Get(Form("h_driflen_kv_r_gs%d", l+1));
+		   h_driflen_ku_l_as[l]   = (TH1D*)fin->Get(Form("h_driflen_ku_l_as%d", l+1));
+		   h_driflen_ku_l_gs[l]   = (TH1D*)fin->Get(Form("h_driflen_ku_l_gs%d", l+1));
+		   h_driflen_ku_r_as[l]   = (TH1D*)fin->Get(Form("h_driflen_ku_r_as%d", l+1));
+		   h_driflen_ku_r_gs[l]   = (TH1D*)fin->Get(Form("h_driflen_ku_r_gs%d", l+1));
 
-		}
-*/
-		TFile *fout2 =new TFile("root/test2.root","RECREATE");
+		   }
+		   */
+		TFile *fout2 =new TFile("root/test2_v6.root","RECREATE");
 		TTree* ftree2 = new TTree("Track_Tree", "Data Track Information");
 		ftree2->Branch("ftracks",&ftracks);
 
@@ -195,6 +195,7 @@ Analyze::Analyze(int nRun, bool force):
 
 
 		for (Long64_t i=0; i<ftreein->GetEntries(); ++i) {
+			std::cout << "\rProcessing Event: " << i << std::flush;
 			ftreein->GetEntry(i);
 			CopyInputVariables();
 			FormHitArrays(0);
@@ -203,7 +204,7 @@ Analyze::Analyze(int nRun, bool force):
 				fDCKuHits[l]->Sort();
 				fDCKpHits[l]->Sort();
 
-			//		std::cout<<"HITs "<<fDCKvHits[l]->GetEntriesFast()<<" "<<fDCKuHits[l]->GetEntriesFast()<<" "<<fDCKvHits[l]->GetEntriesFast()<<std::endl;
+				//		std::cout<<"HITs "<<fDCKvHits[l]->GetEntriesFast()<<" "<<fDCKuHits[l]->GetEntriesFast()<<" "<<fDCKvHits[l]->GetEntriesFast()<<std::endl;
 			}
 
 			MakeGroups();
@@ -213,28 +214,31 @@ Analyze::Analyze(int nRun, bool force):
 			Clear();
 		}
 
-	//	fin->Close();
+		//	fin->Close();
 		fout2->Write();
-	//	fout2->Close();
-	//	delete fout2;
+		//	fout2->Close();
+		//	delete fout2;
 
 		h_npvertex_basic->Reset();
-h_dist_vertex->Reset();
-h_dxdy_vertex->Reset();
-h_npvertex_b1->Reset();
-h_npvertex_b2->Reset();
-h_XY_s[0]->Reset();
-h_XY_s[1]->Reset();
-h_driflen_dchit_s[0]->Reset();
-h_driflen_dchit_s[1]->Reset();
+		h_npvertex_corr->Reset();
+		h_dist_vertex->Reset();
+		h_dxdy_vertex->Reset();
+		h_npvertex_b1->Reset();
+		h_npvertex_b2->Reset();
+		h_XY_s[0]->Reset();
+		h_XY_s[1]->Reset();
+		h_XYcath_s[0]->Reset();
+		h_XYcath_s[1]->Reset();
+		h_driflen_dchit_s[0]->Reset();
+		h_driflen_dchit_s[1]->Reset();
 
-		fout2 = new TFile("root/test3.root","RECREATE");
+		fout2 = new TFile("root/test3_v6.root","RECREATE");
 		ftree2 = new TTree("Track_Tree", "Data Track Information");
 		ftree2->Branch("ftracks",&ftracks);
 
 		BookHistograms();
 
-		ReconstructSTC(50);
+		ReconstructSTC(1);
 
 		std::cout<<"------------------------------------------------------------------"<<std::endl;
 		for (Long64_t i=0; i<ftreein->GetEntries(); ++i) {
@@ -273,6 +277,7 @@ Analyze::~Analyze(){
 	;
 }
 ///////////
+///////////
 void Analyze::LoadData(){
 
 	for (int i=0;i<rawevent->GetNumSeg();i++){
@@ -292,12 +297,11 @@ void Analyze::LoadData(){
 			int edge = d->GetEdge();
 
 
-			if(geo<21)continue; //geo = 25 QTC and timing geo=26 QDC 
+			if(geo<20)continue;
 
-			if(geo <25 &&ch ==127){if(edge==0) {ref_trig_bool[3-(24-geo)] =1; ref_tdc[geo-21]= val;}   }
-			//geo < 25 DC
-			if(geo <25&& ch<127){
+			if(geo <24 &&ch ==127){if(edge==0) {ref_trig_bool[geo-20] =1; ref_tdc[geo-20]= val;}   }
 
+			if((geo <23&& ch<127) || (geo==23&& ch<80)){
 				TArtRIDFMap mm(fp,99,geo,ch);
 				myDCHitPara *para = const_cast<myDCHitPara*>(FindDCHitPara(&mm));
 
@@ -323,9 +327,7 @@ void Analyze::LoadData(){
 						hit = (myDCHit *)fDCWireHits->At(nhit);
 						hit->SetID(id);
 						fDCWireHitsPara.push_back(para);
-
 						hit->SetDetName(*(para->GetDetectorName()));
-
 						hit->SetWireNum(para->GetWireID());
 						hit->SetWirePos(para->GetWirePosition());
 						hit->SetWirePosz(para->GetWireZPosition());
@@ -340,7 +342,7 @@ void Analyze::LoadData(){
 				/*if(detectorid == detector){
 				  if(mm==*((TArtRIDFMap *)para->GetTDCMap()))
 				  hit->SetTDC(val);
-				  }*/				
+				  }*/
 
 
 
@@ -348,7 +350,13 @@ void Analyze::LoadData(){
 
 			//QTC for Refernce Signal
 
-			if(geo == 25 ) {
+			if(geo == 23 && ch>=97 &&ch<118 ) {
+
+				ch -=96;
+				if(ch == 12) ch =0;
+				else if(ch ==13 ) ch = 4;
+				else if(ch == 14) ch =5;
+				else if (ch == 15) ch = 7;
 
 				if (edge == 0 && tdc_ch[ch]== tdc_init) tdc_ch[ch] = val;
 				else if (edge == 1 && tdc_ch[ch]!= tdc_init && trail_tdc_ch[ch]== tdc_init) trail_tdc_ch[ch]= val;
@@ -358,19 +366,19 @@ void Analyze::LoadData(){
 
 
 			}
+			/*
+			   else if( geo == 26){
 
-			else if( geo == 26){
+			   if (ch ==8) continue;
+			   if(ch ==15) ch = 8;
+			//      if(ch == 6) {ch =4;}
+			//      else if(ch==4) {ch =6;}
 
-				if (ch ==8) continue;
-				if(ch ==15) ch = 8;
-				//      if(ch == 6) {ch =4;}
-				//      else if(ch==4) {ch =6;}
-
-				if(ch >npmt) continue;
-				qdc_pmt[ch] = val-qdc_ped[ch];
-				qdcorg_ch[ch] = val;
+			if(ch >npmt) continue;
+			qdc_pmt[ch] = val-qdc_ped[ch];
+			qdcorg_ch[ch] = val;
 			}
-
+			*/
 
 		}
 
@@ -414,10 +422,10 @@ void Analyze::CopyInputVariables() {
 	incidence_pla = incidence_pla_in;
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////
-void Analyze::FormHitArrays(bool force){		
+void Analyze::FormHitArrays(bool force){
 	if(force){
-		if (tdc_ch[31]!=tdc_init) {ref_tdc[4] = tdc_ch[31];ref_trig_bool[4] = 1;
-		}
+		//      if (tdc_ch[31]!=tdc_init) {ref_tdc[4] = tdc_ch[31];ref_trig_bool[4] = 1;}
+
 
 
 		for(int ich = 0; ich<31; ich++){
@@ -426,8 +434,9 @@ void Analyze::FormHitArrays(bool force){
 
 			if(ich<npmt) pmt_bool[ich] =1;
 
-			tdc_ch[ich] -= ref_tdc[4];
-			trail_tdc_ch[ich] -= ref_tdc[4];
+
+			tdc_ch[ich] -= ref_tdc[3];
+			trail_tdc_ch[ich] -= ref_tdc[3];
 
 		}
 
@@ -435,10 +444,9 @@ void Analyze::FormHitArrays(bool force){
 		for(int ipmt = 0 ; ipmt< npmt; ipmt++){
 
 			if (!pmt_bool[ipmt]) continue;
-
 			tdc_pmt[ipmt] = tdc_ch[ipmt];
 			qtc_pmt[ipmt] = trail_tdc_ch[ipmt] - tdc_pmt[ipmt];
-			/*			h_t_ch[ipmt]->Fill(tdc_pmt[ipmt]);
+			/*                      h_t_ch[ipmt]->Fill(tdc_pmt[ipmt]);
 						h_tid->Fill(ipmt,tdc_pmt[ipmt]);
 						h_qtc_pmt[ipmt]->Fill(qtc_pmt[ipmt]);
 						h_qtcid->Fill(ipmt,qtc_pmt[ipmt]);
@@ -446,19 +454,19 @@ void Analyze::FormHitArrays(bool force){
 						h_qdc_pmt[ipmt]->Fill(qdc_pmt[ipmt]);
 						h_qdcorg_ch[ipmt]->Fill(qdcorg_ch[ipmt]);
 
-*/		
+*/
 
 		}
 
 
 		for(int ipla =0; ipla<npla; ipla++){
-			if (tdc_pmt[ipla]==tdc_init|| tdc_pmt[ipla+npla]== tdc_init) continue;
+			if(ipla !=0) {   {if (tdc_pmt[ipla]==tdc_init|| tdc_pmt[ipla+npla]== tdc_init) continue;}
+
 			pla_bool[ipla]=1;
 			t_pla[ipla] = 0.5*(tdc_pmt[ipla]+tdc_pmt[ipla+npla]);
 			tdiff_pla[ipla] = tdc_pmt[ipla]-tdc_pmt[ipla+npla];
 			if(qtc_pmt[ipla]>0&&qtc_pmt[ipla+npla]>0)qtc_pla[ipla]= TMath::Sqrt(qtc_pmt[ipla]*qtc_pmt[ipla+6]);
-			if(qdc_pmt[ipla]>0&&qdc_pmt[ipla+npla]>0)qdc_pla[ipla]= TMath::Sqrt(qdc_pmt[ipla]*qdc_pmt[ipla+6]);
-			/*			h_Qtdiff_pla[ipla]->Fill(tdiff_pla[ipla],qdc_pla[ipla]);
+			/*                      h_Qtdiff_pla[ipla]->Fill(tdiff_pla[ipla],qdc_pla[ipla]);
 						h_qdc_pla[ipla]->Fill(qdc_pla[ipla]);
 						h_qtc_pla[ipla]->Fill(qtc_pla[ipla]);
 						h_tdiff_pla[ipla]->Fill(tdiff_pla[ipla]);
@@ -471,6 +479,16 @@ void Analyze::FormHitArrays(bool force){
 						}
 						*/
 
+		}	else{
+							if(tdc_pmt[ipla]== tdc_init) continue;
+
+
+							pla_bool[ipla]=1;
+							t_pla[ipla] = 0.5*(tdc_pmt[ipla]+tdc_pmt[ipla+npla]);
+							qtc_pla[ipla] = qtc_pmt[ipla];
+
+						}
+
 		}
 
 		for(int ipla=0; ipla<npla/2; ipla++){
@@ -481,18 +499,18 @@ void Analyze::FormHitArrays(bool force){
 
 		}
 		if(sbt_bool){   tof_incidence = incidence_tdc - sbt_tdc;}
-		//			h_Qtof_in->Fill(tof_incidence,qdc_pla[incidence_pla]);}
+		//                      h_Qtof_in->Fill(tof_incidence,qdc_pla[incidence_pla]);}
 
 
 		for(int irow =0; irow<nrow;irow++){
 			if(t_pla[irow] != tdc_init && t_pla[irow+nrow]!=tdc_init){
 				row_bool[irow] =1;
 				tof_row[irow] = t_pla[irow+nrow]-t_pla[irow];
-				/*				h_tof_row[irow]->Fill(tof_row[irow]);
+				/*                              h_tof_row[irow]->Fill(tof_row[irow]);
 								h_Q1tof_row[irow]->Fill(tof_row[irow],qdc_pla[irow]);
 								h_Q2tof_row[irow]->Fill(tof_row[irow],qdc_pla[irow+nrow]);
 								h_Qsumtof_row[irow]->Fill(tof_row[irow],qdc_pla[irow+nrow]+qdc_pla[irow]);
-								*/			}
+								*/                      }
 
 				for(int jrow = 0; jrow<nrow;jrow++){
 
@@ -505,12 +523,11 @@ void Analyze::FormHitArrays(bool force){
 }//Force
 
 //Forming DC Hits
-
+bool fill_pot = false;
 Int_t nDCHits = fDCWireHits->GetEntriesFast();
-
 for (Int_t i = 0; i < nDCHits; i++) {
 	myDCHit *hit = (myDCHit*)fDCWireHits->At(i);
-	int geo_t = fDCWireHitsPara[i]->GetGeo()-21;
+	int geo_t = fDCWireHitsPara[i]->GetGeo()-20;
 	if(!ref_trig_bool[geo_t]) continue;
 	if(force){
 		hit->SetTDC(hit->GetTDC()-ref_tdc[geo_t]);
@@ -521,9 +538,7 @@ for (Int_t i = 0; i < nDCHits; i++) {
 	}
 
 	if (hit->GetDetName()->Contains("s1")) {
-
 		if (hit->GetDetName()->Contains("Kv")) {
-
 			fDCKvHits[0]->Add(hit);
 		}
 		else if (hit->GetDetName()->Contains("Ku")) {
@@ -532,8 +547,18 @@ for (Int_t i = 0; i < nDCHits; i++) {
 		}
 
 		else if (hit->GetDetName()->Contains("Pot")) {
+			if(!hit->IsAsagi()){
 
-			fDCKpHits[0]->Add(hit);
+				if (hit->GetTDC() >= tdcprim_kpmin_gnd[0] && hit->GetTDC() <= tdcprim_kpmax_gnd[0]) fill_pot = true;
+			}
+			else{
+
+				if (hit->GetTDC() >= tdcprim_kpmin_asa[0] && hit->GetTDC() <= tdcprim_kpmax_asa[0])fill_pot = true;
+
+			}
+
+			if(fill_pot)	fDCKpHits[0]->Add(hit);
+
 		}
 
 
@@ -551,8 +576,17 @@ for (Int_t i = 0; i < nDCHits; i++) {
 		}
 
 		else if (hit->GetDetName()->Contains("Pot")) {
+			if(!hit->IsAsagi()){
 
-			fDCKpHits[1]->Add(hit);
+				if (hit->GetTDC() >= tdcprim_kpmin_gnd[0] && hit->GetTDC() <= tdcprim_kpmax_gnd[0]) fill_pot = true;
+			}
+			else{
+
+				if (hit->GetTDC() >= tdcprim_kpmin_asa[0] && hit->GetTDC() <= tdcprim_kpmax_asa[0])fill_pot = true;
+
+			}
+
+			if(fill_pot)	fDCKpHits[1]->Add(hit);
 		}
 
 
@@ -570,7 +604,9 @@ for (Int_t i = 0; i < nDCHits; i++) {
 
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 void Analyze::MakeGroups(){
@@ -764,50 +800,55 @@ void Analyze::PrepareForSTC(){
 
 		for(int ig=0; ig<ngrps; ig++ ){
 			grp = (myGroups*)fDCKpGroups[l]->At(ig);
+			Int_t maxid = -1;
+			Int_t minid = -1;
 			Int_t mul = grp->GetSize();
+			for(int ihit=0; ihit<mul; ihit++){
+				Int_t wireid = grp->At(ihit)->GetWireNum();
+				Int_t tdc = grp->At(ihit)->GetTDC();
+				if(wireid==grp->GetMaxToTID()){maxid = ihit;}//break;
+				if(wireid==grp->GetMinTDCID()){minid = ihit;}//break;
+				h_kp_tdcid_s[l]->Fill(wireid,tdc);
+			}//ihit
+
+			Int_t maxtot = grp->At(minid)->GetToT();
+			//		Int_t mintdc = grp->GetMinTDC();
+
+			Int_t mintdc = grp->At(maxid)->GetTDC();
+			Int_t max2tot = maxtot;
+
+			if(grp->At(maxid)->IsAsagi()){
+
+				h_kp_tdcprim_as[l]->Fill(mintdc);
+
+			}else{
+				h_kp_tdcprim_gs[l]->Fill(mintdc);
+			}
+
+
 			if(mul>=2){
-				int minid = -1;
-				int maxid = -1;
-				for(int ihit=0; ihit<mul; ihit++){
-					Int_t wireid = grp->At(ihit)->GetWireNum();
-					Int_t tdc = grp->At(ihit)->GetTDC();
-					if(wireid==grp->GetMaxToTID()){maxid = ihit;}//break;
-					if(wireid==grp->GetMinTDCID()){minid = ihit;}//break;
-					h_kp_tdcid_s[l]->Fill(wireid,tdc);
-				}//ihit
 				//if(maxid==0||maxid==mul-1) continue;
 				//	if(minid != maxid) continue
-				Int_t maxtot = grp->At(minid)->GetToT();
-				Int_t mintdc = grp->GetMinTDC();
-				Int_t max2tot = maxtot;
 				bool right = 0;
 				if(minid == 0) {max2tot = grp->At(minid+1)->GetToT(); right =false;}
 				else if(minid == mul-1) {max2tot = grp->At(minid-1)->GetToT(); right = true;}
 				else if(grp->At(minid-1)->GetToT()<grp->At(minid+1)->GetToT()){max2tot = grp->At(minid-1)->GetToT(); right = false;}
 				else {max2tot = grp->At(minid+1)->GetToT(); right =1;}
 
-if(grp->At(minid)->IsAsagi()){
-
- h_kp_tdcprim_as[l]->Fill(grp->At(maxid)->GetTDC());
-
-}else{
- h_kp_tdcprim_gs[l]->Fill(grp->At(maxid)->GetTDC());
-}
-
 				if(mul == 2){
-			if(grp->At(minid)->IsAsagi())
-					h_kp_t1t2_as[l]->Fill( grp->At(0)-> GetTDC(), grp->At(1)->GetTDC());
-			else 
-					h_kp_t1t2_gs[l]->Fill( grp->At(0)-> GetTDC(), grp->At(1)->GetTDC());
-				
-				
-			if(grp->At(minid)->IsAsagi())
-					h_kp_dtdw_as[l]->Fill( grp->At(1)->GetToT()-grp->At(0)->GetToT(),grp->At(0)->GetTDC()-grp->At(1)->GetTDC() );
-			
-			else 
-				
-					h_kp_dtdw_gs[l]->Fill( grp->At(1)->GetToT()-grp->At(0)->GetToT(),grp->At(0)->GetTDC()-grp->At(1)->GetTDC() );
-				
+					if(grp->At(minid)->IsAsagi())
+						h_kp_t1t2_as[l]->Fill( grp->At(0)-> GetTDC(), grp->At(1)->GetTDC());
+					else 
+						h_kp_t1t2_gs[l]->Fill( grp->At(0)-> GetTDC(), grp->At(1)->GetTDC());
+
+
+					if(grp->At(minid)->IsAsagi())
+						h_kp_dtdw_as[l]->Fill( grp->At(1)->GetToT()-grp->At(0)->GetToT(),grp->At(0)->GetTDC()-grp->At(1)->GetTDC() );
+
+					else 
+
+						h_kp_dtdw_gs[l]->Fill( grp->At(1)->GetToT()-grp->At(0)->GetToT(),grp->At(0)->GetTDC()-grp->At(1)->GetTDC() );
+
 				}//mul ==2
 
 
@@ -816,10 +857,9 @@ if(grp->At(minid)->IsAsagi()){
 				h_kp_tdcprim_s[l]->Fill(mintdc);
 				if(grp->At(minid)->IsAsagi()){
 					h_kp_dw_as[l]->Fill((maxtot-max2tot)*(2*(right-0.5)));
-					h_kp_tdcprim_as[l]->Fill(mintdc);
 				}
 				else{h_kp_dw_gs[l]->Fill((maxtot-max2tot)*(2*(right-0.5)));
-					h_kp_tdcprim_gs[l]->Fill(mintdc);}
+				}
 
 
 			}// mul>=2
@@ -829,11 +869,6 @@ if(grp->At(minid)->IsAsagi()){
 
 				Int_t mintdc = grp->GetMinTDC();
 				h_kp_tdcprim_s[l]->Fill(mintdc);
-				if(grp->At(minid)->IsAsagi()){
-					h_kp_tdcprim_as[l]->Fill(mintdc);
-				}
-				else{
-					h_kp_tdcprim_gs[l]->Fill(mintdc);}
 
 			} //mul==1 
 
@@ -866,6 +901,7 @@ void Analyze::MakeSTC(){
 		//
 
 
+			if(stc_make_kv){
 		h = h_kv_dtot_l_as[l];
 		total_int_al = h->Integral(h->FindBin(0),h->FindBin(difftot_kvmax_asa[l]));
 
@@ -941,12 +977,12 @@ void Analyze::MakeSTC(){
 			h_driflen_ku_r_gs[l]->Fill(stc_ku_r_g[l][ist],h->GetBinContent(h->FindBin(ist)));
 		}
 
-
+			}//stc_make_kv
 
 		//KP
 		//
 
-	
+
 		h = h_kp_tdcprim_s[l];
 		total_kp = h->Integral(h->FindBin(tdcprim_kpmin[l]),h->FindBin(tdcprim_kpmax[l]));
 		for(int ist = 0; ist<tdcprim_kpmax[l]-tdcprim_kpmin[l]+1;ist++){
@@ -973,7 +1009,7 @@ void Analyze::MakeSTC(){
 		for(int ist = 0; ist<tdcprim_kpmax_gnd[l]-tdcprim_kpmin_gnd[l]+1;ist++){
 			int modbin = ist+tdcprim_kpmin_gnd[l];
 			stc_kp_g[l][ist] =  (h->Integral(h->FindBin(tdcprim_kpmin_gnd[l]),h->FindBin(modbin)))/(1.*total_kp_g)*(8.);
-			h_driflen_kp_gs[l]->Fill(stc_kp_a[l][ist],h->GetBinContent(h->FindBin(modbin)));
+			h_driflen_kp_gs[l]->Fill(stc_kp_g[l][ist],h->GetBinContent(h->FindBin(modbin)));
 
 		}
 
@@ -1005,6 +1041,7 @@ void Analyze::MakeDCHits(){
 		v.clear();
 		u.clear();
 
+		Int_t	npgrps =  fDCKpGroups[l]->GetEntriesFast();
 		//Kv 
 		ngrps = fDCKvGroups[l]->GetEntriesFast(); 
 
@@ -1049,16 +1086,17 @@ void Analyze::MakeDCHits(){
 
 
 				double xc = -(u[iu]+v[iv])/TMath::Sqrt(2);
-				ngrps =  fDCKpGroups[l]->GetEntriesFast();
+				Double_t y = 	(u[iu]-v[iv])/TMath::Sqrt(2);
+				h_XYcath_s[l]->Fill(xc,y);
 				if(TMath::Abs(static_cast<int>(std::round(TMath::Abs(xc)))%16-7)<5) continue;
 				double xcr = std::round(xc/16)*16;
 
-				for(int ig=0; ig<ngrps; ig++ ){
+				for(int ig=0; ig<npgrps; ig++ ){
 					grp = (myGroups*)fDCKpGroups[l]->At(ig);
 					Int_t mul = grp->GetSize();
 					//int minid = grp->GetMinTDCID()-grp->GetStartID();
 					int minid = grp->GetMaxToTID()-grp->GetStartID();
-bool Asagi = grp->At(minid)->IsAsagi();
+					bool Asagi = grp->At(minid)->IsAsagi();
 					double potpos = grp->At(minid)->GetWirePos();
 					double anx[2];
 					anx[0]	= potpos -8;
@@ -1068,17 +1106,16 @@ bool Asagi = grp->At(minid)->IsAsagi();
 					int kdir =0;
 					Double_t x_drift = CalcDriftLenPot( tdc,  l, Asagi);
 					Double_t x_pot = -99999;
-					if(TMath::Abs(anx[1]-xcr)<1){
+					if(TMath::Abs(anx[1]-xcr)<=1){
 						kdir = -1;
 						x_pot = anx[1] - x_drift; //potpos + kdir*(8 + x_drift)
 					}
 
-					else if( TMath::Abs(anx[0]-xcr<1)){
+					else if( TMath::Abs(anx[0]-xcr)<=1){
 						kdir = 1;	
 						x_pot = anx[0] + x_drift; //potpos + kdir*(8 + x_drift) 
 					}
 					else {continue;}
-					Double_t y = 	(u[iu]-v[iv])/TMath::Sqrt(2);
 					//Add Hits to myDCevt;
 					Double_t z = grp->GetZ();
 					h_driflen_dchit_s[l]->Fill(x_drift);
@@ -1099,6 +1136,8 @@ bool Asagi = grp->At(minid)->IsAsagi();
 					dcevt->SetXID(grp->At(minid)->GetID());
 					dcevt->SetUID(ugrp->At(ugrp->GetMaxToTID()-ugrp->GetStartID())->GetID());
 					dcevt->SetVID(vgrp->At(vgrp->GetMaxToTID()-vgrp->GetStartID())->GetID());
+
+					break;
 
 
 				}//Loop over groups X
@@ -1150,7 +1189,7 @@ Double_t Analyze::MakePositionCathode(myGroups* grp,int l){
 			else wt_r = 0.0000001;
 			if(dtot_l !=0) wt_l = 1/double(dtot_l);
 			else wt_l = 0.0000001;
-			
+
 			avg_drf =  (stc_kv_r_g[l][dtot_r]/wt_r+stc_kv_l_g[l][dtot_l]/wt_l)/(1/wt_l +1/wt_r);
 			pos = strippos + avg_drf;
 			//	pos = strippos + stc_kv_r_g[l][dtot_r]; 
@@ -1209,15 +1248,15 @@ Double_t Analyze::CalcDriftLenPot(int tdc, int l , bool Asagi){
 
 	int modtdc;
 	if(!Asagi){
-	if(tdc<=tdcprim_kpmin_gnd[l]){modtdc =0;}
-	else if(tdc>=tdcprim_kpmax_gnd[l]){modtdc = tdcprim_kpmax_gnd[l] - tdcprim_kpmin_gnd[l];}
-	else {modtdc = tdc-tdcprim_kpmin_gnd[l];}
-	return stc_kp_g[l][modtdc];}
+		if(tdc<=tdcprim_kpmin_gnd[l]){modtdc =0;}
+		else if(tdc>=tdcprim_kpmax_gnd[l]){modtdc = tdcprim_kpmax_gnd[l] - tdcprim_kpmin_gnd[l];}
+		else {modtdc = tdc-tdcprim_kpmin_gnd[l];}
+		return stc_kp_g[l][modtdc];}
 	else 
 	{if(tdc<=tdcprim_kpmin_asa[l]){modtdc =0;}
-	else if(tdc>=tdcprim_kpmax_asa[l]){modtdc = tdcprim_kpmax_asa[l] - tdcprim_kpmin_asa[l];}
-	else {modtdc = tdc-tdcprim_kpmin_asa[l];}
-	return stc_kp_a[l][modtdc];}
+		else if(tdc>=tdcprim_kpmax_asa[l]){modtdc = tdcprim_kpmax_asa[l] - tdcprim_kpmin_asa[l];}
+		else {modtdc = tdc-tdcprim_kpmin_asa[l];}
+		return stc_kp_a[l][modtdc];}
 }
 ////////////////////////////
 
@@ -1233,20 +1272,22 @@ void Analyze::MakeTracks(){
 	myDCevt* dcevt = nullptr;
 	int n_dceve[2]={fDCevts[0]->GetEntriesFast(),fDCevts[1]->GetEntriesFast()}; 
 
-	TVector3 *fl1pos = new TVector3(0,0,-124.95);
-	TVector3 *fl2pos = new TVector3(0,0,124.95);
+	TVector3 fl1pos(0, 0, -124.95);
+	TVector3 fl2pos(0, 0, 124.95);
 
+	if (n_dceve[1] ==0 || n_dceve[0] ==0) return;
 	for (int ieve1 = 0; ieve1<n_dceve[0];ieve1++){
-		if (n_dceve[1] ==0) break;
 		for (int ieve2 = 0; ieve2< n_dceve[1]; ieve2++){
-			myTrack* track = (myTrack*)ftracks->ConstructedAt(ftracks->GetEntriesFast());
+			myTrack local_track;
+			myTrack* track = &local_track;
+			//myTrack* track = (myTrack*)ftracks->ConstructedAt(ftracks->GetEntriesFast());
 			track->SetDC1evt((myDCevt*)fDCevts[0]->At(ieve1));
 			dcevt = (myDCevt*)fDCevts[0]->At(ieve1);
 			track->SetXID(0,dcevt->GetXID());
 			track->SetVID(0,dcevt->GetVID());
 			track->SetUID(0,dcevt->GetUID());
-			track->SetConvPos(fl1pos);
-			track->SetCatPos(fl2pos);
+			track->SetConvPos(&fl1pos);
+			track->SetCatPos(&fl2pos);
 
 			track->SetDC2evt((myDCevt*)fDCevts[1]->At(ieve2));	
 
@@ -1281,27 +1322,47 @@ void Analyze::MakeTracks(){
 				}
 
 			}// Layer 2 plastic hit check
+			int track_idx = ftracks->GetEntriesFast();
+			myTrack* ftrack_elem = (myTrack*)ftracks->ConstructedAt(track_idx);
+			*ftrack_elem = *track;
 			int cum_index = ftracks_cum->GetEntriesFast();
 			new ((*ftracks_cum)[cum_index]) myTrack(*track);
 
 			h_npvertex_basic->Fill(track->GetnpVertex().X(), track->GetnpVertex().Y());
 			if(TMath::Abs(track->GetYAngle())<2*TMath::Pi()/180.){
-				
+
 				h_npvertex_b2->Fill(track->GetnpVertex().X(), track->GetnpVertex().Y());
-				}
-				if(TMath::Abs(track->GetYAngle())<1*TMath::Pi()/180.){
-				
+			}
+			if(TMath::Abs(track->GetYAngle())<1*TMath::Pi()/180.){
+
 				h_npvertex_b1->Fill(track->GetnpVertex().X(), track->GetnpVertex().Y());
-				}
-						if(!(fconv && fcat)) {
+			}
+
+			if(TMath::Abs(track->GetXAngle())<2*TMath::Pi()/180.){
+
+				h_npvertex_a2->Fill(track->GetnpVertex().X(), track->GetnpVertex().Y());
+			}
+			if(TMath::Abs(track->GetXAngle())<1*TMath::Pi()/180.){
+
+				h_npvertex_a1->Fill(track->GetnpVertex().X(), track->GetnpVertex().Y());
+			}
+
+
+		//	if(TMath::Abs(track->GetZAngle())<1*TMath::Pi()/180.){ std::cout<<"\n";std::cout<<track->GetConvID()<<" "<<track->GetCatID()<<std::endl;}
+			
+				if(!(fconv && fcat)) {
 
 				if(ftracks->GetEntriesFast()>0){
-						ftracks->RemoveAt(ftracks->GetEntriesFast()-1);
+					((myTrack*)ftracks->At(ftracks->GetEntriesFast()-1))->Clear();
+					((myTrack*)ftracks_cum->At(cum_index))->Clear();	
+					ftracks->RemoveAt(ftracks->GetEntriesFast()-1);
 					ftracks_cum->RemoveAt(cum_index);
+					ftracks->Compress();
+					ftracks_cum->Compress();
 					;	}
 			}else{	
-			
-			h_npvertex_corr->Fill(track->GetnpVertex().X(), track->GetnpVertex().Y());
+
+				h_npvertex_corr->Fill(track->GetnpVertex().X(), track->GetnpVertex().Y());
 
 
 			}
@@ -1311,22 +1372,42 @@ void Analyze::MakeTracks(){
 
 
 	}// NEOLITH-s1 evts	
-	ftracks->Compress();
-	ftracks_cum->Compress();
 
 	//	if(ftracks->GetEntriesFast()>1) std::cout<<((myTrack*)ftracks->At(0))->GetConvID()<<" "<<((myTrack*)ftracks->At(1))->GetConvID()<<std::endl;
-	if(ftracks->GetEntriesFast()>1){
-		myTrack* tr1 = (myTrack*)ftracks->At(0);
-		myTrack* tr2 = (myTrack*)ftracks->At(1);
-		Double_t dist =(tr1->GetnpVertex()-tr2->GetnpVertex()).Mag() ;
-		TVector3 dist_vec =(tr1->GetnpVertex()-tr2->GetnpVertex()) ;
-		if((tr1)->GetConvID() ==(tr2)->GetConvID() && dist!=0 ){
-			h_dist_vertex->Fill(dist);
-			h_dxdy_vertex->Fill(TMath::Abs(dist_vec.X()),TMath::Abs(dist_vec.Y()));
-		
-		}
-		//std::cout<<(tr1->GetnpVertex()-tr2->GetnpVertex()).Mag()<<std::endl;
-	}
+	/*if(ftracks->GetEntriesFast()>1){
+	  myTrack* tr1 = (myTrack*)ftracks->At(0);
+	  myTrack* tr2 = (myTrack*)ftracks->At(1);
+	  Double_t dist =(tr1->GetnpVertex()-tr2->GetnpVertex()).Mag() ;
+	  TVector3 dist_vec =(tr1->GetnpVertex()-tr2->GetnpVertex()) ;
+	  if((tr1)->GetConvID() ==(tr2)->GetConvID() && (tr1)->GetConvID() >= 0 ){
+	  h_dist_vertex->Fill(dist);
+	  h_dxdy_vertex->Fill(TMath::Abs(dist_vec.X()),TMath::Abs(dist_vec.Y()));
+
+	  }
+	//std::cout<<(tr1->GetnpVertex()-tr2->GetnpVertex()).Mag()<<std::endl;
+	}*/
+
+	Int_t nTracks = ftracks->GetEntriesFast();
+	if(nTracks ==2) 
+		for (Int_t i = 0; i < nTracks - 1; ++i) {
+			myTrack* tr1 = (myTrack*)ftracks->At(i);
+
+			for (Int_t j = i + 1; j < nTracks; ++j) {
+				myTrack* tr2 = (myTrack*)ftracks->At(j);
+
+				TVector3 dist_vec = tr1->GetnpVertex() - tr2->GetnpVertex();
+				Double_t dist = dist_vec.Mag();
+
+				// Only fill for tracks from the same conversion
+				if (tr1->GetConvID() == tr2->GetConvID() &&
+						tr1->GetConvID() >= 0) {
+
+					h_dist_vertex->Fill(dist);
+					h_dxdy_vertex->Fill(TMath::Abs(dist_vec.X()),
+							TMath::Abs(dist_vec.Y()));
+				}
+			} //loop over the tracks with index more than the current track
+		}//loop over all the tracks 
 }
 ///////////////////////////////
 
@@ -1335,14 +1416,13 @@ void Analyze::ReconstructSTC(int niter){
 	Int_t ntracks = ftracks_cum->GetEntriesFast();
 	std::cout<<1<< " "<<ntracks<<std::endl;
 	myTrack* track = nullptr;
+			stc_make_kv =false;
 
 	myDCHitPara *para = nullptr;
 	for(int iter = 0; iter<niter; iter++){
 		ClearSTCHist();
-		if(iter> niter-2){
 
-			h_npvertex_corr->Reset();
-		}
+		std::cout << "\rCurrent STC Iteration: " << iter+1 << std::flush;
 		for(int itra=0; itra<ntracks; itra++){
 			track = (myTrack*)ftracks_cum->At(itra);
 
@@ -1350,8 +1430,8 @@ void Analyze::ReconstructSTC(int niter){
 
 			//	std::cout<<"Y Angle "<<track->GetYAngle()<<std::endl;
 			ModifyTrack(track);
-
-			if(TMath::Abs(track->GetZAngle())<10*TMath::Pi()/180.){
+			if(stc_make_kv ){
+			if(TMath::Abs(track->GetZAngle())<1*TMath::Pi()/180.){
 				for(int l =0; l<2;l++){	
 					para = const_cast<myDCHitPara*>(FindDCHitPara(track->GetVID(l)));
 					Bool_t asagiv = para->GetIsAsagi();
@@ -1382,8 +1462,8 @@ void Analyze::ReconstructSTC(int niter){
 
 
 			}//TrackY angle
-
-			if(TMath::Abs(track->GetZAngle())<10*TMath::Pi()/180.){	
+			}
+			if(TMath::Abs(track->GetZAngle())<1*TMath::Pi()/180.){	
 				for(int l =0; l<2; l++){
 					para = const_cast<myDCHitPara*>(FindDCHitPara(track->GetXID(l)));
 					Bool_t asagix = para->GetIsAsagi();
@@ -1398,17 +1478,6 @@ void Analyze::ReconstructSTC(int niter){
 
 			}
 
-			if(iter>niter-2){
-				if(track->GetConvID()>=0 && track->GetCatID()>=0)h_npvertex_corr->Fill(track->GetnpVertex().X(), track->GetnpVertex().Y());
-				if(TMath::Abs(track->GetYAngle())<2*TMath::Pi()/180.){
-				
-				h_npvertex_b2->Fill(track->GetnpVertex().X(), track->GetnpVertex().Y());
-				}
-				if(TMath::Abs(track->GetYAngle())<1*TMath::Pi()/180.){
-				
-				h_npvertex_b1->Fill(track->GetnpVertex().X(), track->GetnpVertex().Y());
-				}
-			}
 		}//Loop over All Tracks
 
 
@@ -1579,6 +1648,7 @@ myDCHitPara *Analyze::ParseDCHitPara(TXMLNode *node, std::map<TArtRIDFMap, myDCH
 	Bool_t asagi = 0;
 
 	for ( ; node; node = node->GetNextNode()) {
+
 		if (node->GetNodeType() == TXMLNode::kXMLElementNode) { // Element Node
 			if (strcmp(node->GetNodeName(), "ID") == 0)
 				id = std::stoi(node->GetText());
@@ -1590,7 +1660,7 @@ myDCHitPara *Analyze::ParseDCHitPara(TXMLNode *node, std::map<TArtRIDFMap, myDCH
 				wirepos = std::stod(node->GetText());
 			if (strcmp(node->GetNodeName(), "posz") == 0)
 				wirez = std::stod(node->GetText());
-			if (strcmp(node->GetNodeName(), "dir") == 0)
+			if (strcmp(node->GetNodeName(), "direction") == 0)
 				dir  = node->GetText();
 			if (strcmp(node->GetNodeName(), "geo") == 0)
 				geo = std::stoi(node->GetText());
@@ -1599,7 +1669,7 @@ myDCHitPara *Analyze::ParseDCHitPara(TXMLNode *node, std::map<TArtRIDFMap, myDCH
 			if (strcmp(node->GetNodeName(),"IsAsagi")==0)
 				asagi = std::stoi(node->GetText());
 
-		}	
+		}
 
 	}
 	myDCHitPara * para = new myDCHitPara(id, name, wireid, wirepos, wirez,dir,asagi);
@@ -1610,7 +1680,7 @@ myDCHitPara *Analyze::ParseDCHitPara(TXMLNode *node, std::map<TArtRIDFMap, myDCH
 	return para;
 
 
-} 
+}
 //////////////////////////////////////////////////////////////////////////////////
 myDCHit* Analyze::FindDCHit(Int_t id){
 
@@ -1712,6 +1782,7 @@ void Analyze::Clearin(){
 /////////////////////////////////////////////////////////////
 void Analyze::ClearSTC(){
 
+			if(stc_make_kv){
 	stc_kv_l_a.assign(2, std::vector<double>(difftot_kvmax_asa[0] + 1, 0.0));
 	stc_kv_l_g.assign(2, std::vector<double>(difftot_kvmax_gnd[0] + 1, 0.0));
 	stc_ku_l_a.assign(2, std::vector<double>(difftot_kumax_asa[0] + 1, 0.0));
@@ -1720,7 +1791,7 @@ void Analyze::ClearSTC(){
 	stc_kv_r_g.assign(2, std::vector<double>(difftot_kvmax_gnd[0] + 1, 0.0));
 	stc_ku_r_a.assign(2, std::vector<double>(difftot_kumax_asa[0] + 1, 0.0));
 	stc_ku_r_g.assign(2, std::vector<double>(difftot_kumax_gnd[0] + 1, 0.0));
-
+			} //STCMakeKV
 	stc_kp.assign(2, std::vector<double>(tdcprim_kpmax[0] - tdcprim_kpmin[0] + 1, 0.0));
 	stc_kp_g.assign(2, std::vector<double>(tdcprim_kpmax_gnd[0] - tdcprim_kpmin_gnd[0] + 1, 0.0));
 	stc_kp_a.assign(2, std::vector<double>(tdcprim_kpmax_asa[0] - tdcprim_kpmin_asa[0] + 1, 0.0));
@@ -1748,6 +1819,7 @@ void Analyze::ClearSTCHist(){
 
 	for(int l=0; l<2; l++){
 
+			if(stc_make_kv){
 		h_kv_dtot_l_gs[l]->Reset();
 		h_kv_dtot_r_gs[l]->Reset();
 		h_kv_dtot_l_as[l]->Reset();
@@ -1756,6 +1828,7 @@ void Analyze::ClearSTCHist(){
 		h_ku_dtot_r_gs[l]->Reset();
 		h_ku_dtot_l_as[l]->Reset();
 		h_ku_dtot_r_as[l]->Reset();
+		}
 		h_kp_tdcprim_s[l]->Reset(); 
 		h_kp_tdcprim_as[l]->Reset();
 		h_kp_tdcprim_gs[l]->Reset();
@@ -1819,7 +1892,8 @@ void Analyze::BookHistograms(){
 
 
 		h_driflen_dchit_s[l] = new TH1D(Form("h_driflen_dchit_s%d",l+1),Form("(WHile DC Hit formation) Drift Length Distribution Kp NEOLITH-s %d",l+1),100,0,10);
-h_XY_s[l] = new TH2D(Form("h_XY_s%d",l+1),Form("XY image at potential plane NEOLITH-s%d",l+1),300,-400,400,300,-400,400);
+		h_XY_s[l] = new TH2D(Form("h_XY_s%d",l+1),Form("XY image at potential plane NEOLITH-s%d",l+1),300,-400,400,300,-400,400);
+		h_XYcath_s[l] = new TH2D(Form("h_XYcath_s%d",l+1),Form("XY from Cathode Planes image at potential plane NEOLITH-s%d",l+1),3000,-400,400,300,-400,400);
 	}
 
 	h_npvertex_basic = new TH2D("h_npvertex_basic","N-P Vertex at Middle of Layer1 before any correction",250,-300,300,250,-300,300);
@@ -1829,6 +1903,9 @@ h_XY_s[l] = new TH2D(Form("h_XY_s%d",l+1),Form("XY image at potential plane NEOL
 
 	h_npvertex_b1 = new TH2D("h_npvertex_b1","np Vertex with beta <1 deg",250,-300,300,250,-300,300);
 	h_npvertex_b2 = new TH2D("h_npvertex_b2","np Vertex with beta <2 deg",250,-300,300,250,-300,300);
+	h_npvertex_a1 = new TH2D("h_npvertex_a1","np Vertex with alpha <1 deg",250,-300,300,250,-300,300);
+	h_npvertex_a2 = new TH2D("h_npvertex_a2","np Vertex with alpha <2 deg",250,-300,300,250,-300,300);
+
 }
 
 

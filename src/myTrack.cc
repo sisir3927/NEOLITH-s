@@ -25,6 +25,8 @@ for(int l=0; l<2;l++){
 	fXang = -99999;
 	fYang = -99999;
 	fZang = -99999;
+	fid1 = -1;
+	fid2 = -1;
 }
 //////////////////////////////
 void myTrack::Calibrate(){
@@ -73,6 +75,9 @@ void myTrack::Calibrate(){
 	if(fCatPos) 
 		fpcatch = Extrapolate(fXang, fYang, fDCHitPos[0], fCatPos->Z());
 	}
+	else{
+		std::cout<<"Not Calibrated"<<std::endl;
+	}
 
 }
 //////////////////////////////
@@ -112,12 +117,14 @@ pos = nullptr;
 
 void myTrack::Clear(){
 
-	fnpvertex = TVector3(-99999,-99999,-99999);
-	fpcatch = TVector3(-99999,-99999,-99999);
-	fConvPos = nullptr;
-	fCatPos = nullptr;
-	fDCHitPos[0] = nullptr;
-	fDCHitPos[1] = nullptr;
-
+fnpvertex = TVector3(-99999,-99999,-99999);
+        fpcatch = TVector3(-99999,-99999,-99999);
+        ftrackvec = TVector3(-99999,-99999,-99999);
+        fConvPos = nullptr;
+        fCatPos = nullptr;
+        fDCHitPos[0] = nullptr;
+        fDCHitPos[1] = nullptr;
+        fdceve1 = nullptr; // Reset these too!
+        fdceve2 = nullptr;
 }
 
