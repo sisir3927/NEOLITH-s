@@ -33,12 +33,17 @@ class myTrack:public TObject{
 	void SetYAngle(Double_t ang){fYang = ang;}
 
 	void SetXtdc(Int_t l, Int_t drift){fXdtdc[l] = drift;}
+	void SetULrattot(Int_t l,Int_t drift){fULrattot[l] = drift;}
+	void SetVLrattot(Int_t l,Int_t drift){fVLrattot[l] = drift;}
+	void SetURrattot(Int_t l,Int_t drift){fURrattot[l] = drift;}
+	void SetVRrattot(Int_t l,Int_t drift){fVRrattot[l] = drift;}
+
+
 	void SetULdtot(Int_t l,Int_t drift){fULdtot[l] = drift;}
 	void SetVLdtot(Int_t l,Int_t drift){fVLdtot[l] = drift;}
 	void SetURdtot(Int_t l,Int_t drift){fURdtot[l] = drift;}
 	void SetVRdtot(Int_t l,Int_t drift){fVRdtot[l] = drift;}
-
-
+	
 	void SetDC1evt(myDCevt *eve){fdceve1 = eve;}
 	void SetDC2evt(myDCevt *eve){fdceve2 = eve;}
 
@@ -84,11 +89,15 @@ class myTrack:public TObject{
 	Double_t GetZAngle(){return fZang;}
 
 	Double_t GetXtdc(Int_t l){return fXdtdc[l];}
+	Double_t GetULrattot(Int_t l){return fULrattot[l];}
+	Double_t GetVLrattot(Int_t l){return fVLrattot[l];}
+	Double_t GetURrattot(Int_t l){return fURrattot[l];}
+	Double_t GetVRrattot(Int_t l){return fVRrattot[l];}
+
 	Double_t GetULdtot(Int_t l){return fULdtot[l];}
 	Double_t GetVLdtot(Int_t l){return fVLdtot[l];}
 	Double_t GetURdtot(Int_t l){return fURdtot[l];}
 	Double_t GetVRdtot(Int_t l){return fVRdtot[l];}
-
 
 
 	Int_t GetXID(Int_t l){return fxid[l];}
@@ -138,6 +147,10 @@ class myTrack:public TObject{
 	Int_t fURdtot[2];
 	Int_t fVRdtot[2];
 
+	Int_t fULrattot[2];
+	Int_t fVLrattot[2];
+	Int_t fURrattot[2];
+	Int_t fVRrattot[2];
 	Bool_t fasagiX[2];
 	Bool_t fasagiV[2];
 	Bool_t fasagiU[2];

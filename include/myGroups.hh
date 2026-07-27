@@ -1,167 +1,128 @@
 #ifndef MYGROUPS_HH
 #define MYGROUPS_HH
 
-#include "TClonesArray.h"
+#include "TObject.h"
+#include "TObjArray.h"
 #include "myDCHit.hh"
 
-class myGroups:public TObject{
+class myGroups : public TObject {
 
-	public:
-		myGroups()
-		{
+public:
+    myGroups() {
+        farray.SetOwner(kFALSE);
+        fstartID  = -1;
+        fendID    = -1;
+        fmaxtot   = -999999;
+        fmaxtotid = -1;
+        fmaxidx   = -1;
+        fmintdcid = -1;
+        fmintdc   = 999999;
+        fpos      = -99999;
+        fz        = -99999;
+    }
+    ~myGroups() = default;
 
-			farray.SetOwner(kFALSE);
-			fstartID = -1;
-			fendID = -1;
-			fmaxtot = -999999;
-			fmaxtotid = -1;
-			fmintdcid = -1;
-			fmintdc = 99999;
-			fpos = -99999;
-			fz = -99999;
-			fdifftot_l = -99999;
-			fdifftot_r = -99999;
+    void SetPos(Double_t pos) { fpos = pos; }
 
+    void Add(myDCHit *hit) {
+        if (!hit) return; // Basic pointer safety check
 
-		}
-		~myGroups() = default;
+        fz = hit->GetWirePosz();
 
+        // Baseline setup on first hit
+        if (farray.GetEntriesFast() == 0) {
+            fstartID  = hit->GetWireNum();
+            fmaxtot   = hit->GetToT();
+            fmaxtotid = hit->GetWireNum();
+            fmaxidx   = 0;
 
+            fmintdc   = hit->GetTDC();
+            fmintdcid = hit->GetWireNum();
+        } else {
+            Int_t current_tot  = hit->GetToT();
+            Int_t current_tdc  = hit->GetTDC();
+            Int_t current_wire = hit->GetWireNum();
 
-		void SetPos(double_t pos){fpos =pos;};
-		void SetdToTL(int diff){fdifftot_l = diff;}
-		void SetdToTR(int diff){fdifftot_r = diff;}
-		/*void Add(myDCHit * hit){
+            // 1. Is this the new maximum Time-over-Threshold (ToT)?
+            if (current_tot > fmaxtot) {
+                fmaxtot   = current_tot;
+                fmaxtotid = current_wire;
+                fmaxidx   = farray.GetEntriesFast(); // Store array index before adding
+            }
 
-			if(farray.GetEntriesFast()==0)
-				fstartID = hit->GetWireNum();
-
-
-			fendID = hit->GetWireNum();
-
-
-			farray.Add(hit);
-			Int_t mintdc = hit->GetTDC();
-			Int_t maxtot = hit->GetToT();
-			Int_t mintdcid = hit->GetWireNum();
-			Int_t maxtotid = hit->GetWireNum();
-
-			if(maxtot> fmaxtot){
-
-				fmaxtot = maxtot;
-				fmaxtotid = maxtotid;
-			}
-
-			if(mintdc< fmintdc){
-
-				fmintdc= mintdc;
-				fmintdcid = mintdcid;
-			}
-
-		}*/
-
-void Add(myDCHit *hit) {
-    if (!hit) return; // Basic pointer safety check
-	 fz = hit->GetWirePosz();
-    // If this is the very first hit in the cluster group
-    if (farray.GetEntriesFast() == 0) {
-        fstartID = hit->GetWireNum();
-        
-        // Establish the baseline using the first hit's actual properties
-        fmaxtot   = hit->GetToT();
-        fmaxtotid = hit->GetWireNum();
-        
-        fmintdc   = hit->GetTDC();
-        fmintdcid = hit->GetWireNum();
-    } 
-    else {
-        // For all subsequent hits, do comparison checks:
-        Int_t current_tot = hit->GetToT();
-        Int_t current_tdc = hit->GetTDC();
-        Int_t current_wire = hit->GetWireNum();
-
-        // 1. Is this the new maximum Time-over-Threshold (ToT)?
-        if (current_tot > fmaxtot) {
-            fmaxtot   = current_tot;
-            fmaxtotid = current_wire;
+            // 2. Is this the new minimum Drift Time (TDC)?
+            if (current_tdc < fmintdc) {
+                fmintdc   = current_tdc;
+                fmintdcid = current_wire;
+            }
         }
 
-        // 2. Is this the new minimum Drift Time (TDC)?
-        if (current_tdc < fmintdc) {
-            fmintdc   = current_tdc;
-            fmintdcid = current_wire;
-        }
+        fendID = hit->GetWireNum();
+        farray.Add(hit);
     }
 
-    // Always update the trailing edge boundary and store the hit pointer
-    fendID = hit->GetWireNum();
-    farray.Add(hit);
+    Int_t GetSize() const { return farray.GetEntriesFast(); }
 
-Int_t mid = fmaxtotid-fstartID;
-if(IsCathOk()){
-    Int_t lmaxtot = ((myDCHit *)farray.At(mid-1))->GetToT();
-    Int_t rmaxtot = ((myDCHit *)farray.At(mid+1))->GetToT();
-fdifftot_l = fmaxtot-lmaxtot;
-fdifftot_r = fmaxtot-rmaxtot;
-	}	
-}
+    // Safe cathode check using internal array indices
+    Bool_t IsCathOk() const {
+        Int_t n = farray.GetEntriesFast();
+        return (fmaxidx > 0 && fmaxidx < n - 1);
+    }
 
+    Int_t GetMaxToTID() const { return fmaxtotid; }
+    Int_t GetMaxToT() const   { return fmaxtot; }
+    Int_t GetMinTDC() const   { return fmintdc; }
+    Int_t GetMinTDCID() const { return fmintdcid; }
 
-		Int_t GetSize() const{
+    Double_t GetPos() const   { return fpos; }
+    Int_t GetStartID() const  { return fstartID; }
+    Int_t GetEndID() const    { return fendID; }
+    Double_t GetZ() const     { return fz; }
 
-			return farray.GetEntriesFast();
+    myDCHit* At(Int_t i) const {
+        return (myDCHit*) farray.At(i);
+    }
 
-		};
+    // Dynamic, safe computation of ToT left/right differences
+    Double_t GetdToTL() const {
+        if (!IsCathOk()) return -99999;
+        Int_t lmaxtot = ((myDCHit*)farray.At(fmaxidx - 1))->GetToT();
+        return static_cast<Double_t>(fmaxtot - lmaxtot);
+    }
 
-		Bool_t IsCathOk(){
-				
-Int_t mid = fmaxtotid-fstartID;
-if(mid !=0 && mid!=farray.GetEntriesFast()-1){
-		return true;} else {return false;}		
-		};
+    Double_t GetdToTR() const {
+        if (!IsCathOk()) return -99999;
+        Int_t rmaxtot = ((myDCHit*)farray.At(fmaxidx + 1))->GetToT();
+        return static_cast<Double_t>(fmaxtot - rmaxtot);
+    }
 
-		Int_t  GetMaxToTID(){return fmaxtotid;}
+	 Double_t GetratToTL() const {
+        if (!IsCathOk()) return -99999;
+        Int_t lmaxtot = ((myDCHit*)farray.At(fmaxidx - 1))->GetToT();
+        return static_cast<Double_t>(1./fmaxtot*lmaxtot);
+    }
 
-		Int_t GetMaxToT(){return fmaxtot;}
-		Int_t GetMinTDC(){return fmintdc;}
-
-		Int_t GetMinTDCID(){return fmintdcid;}
-
-		Double_t GetPos(){return fpos;};
-
-		Int_t GetStartID() {return fstartID;}
-		Int_t GetEndID() {return fendID;}
-
-
-		myDCHit* At(Int_t i) const{
-
-			return (myDCHit*) farray.At(i);
-		}
-
-
-		Int_t GetdToTL(){return fdifftot_l;}
-		Int_t GetdToTR(){return fdifftot_r;}
-	
-		Double_t GetZ(){return fz;}
+    	Double_t GetratToTR() const {
+        if (!IsCathOk()) return -99999;
+        Int_t rmaxtot = ((myDCHit*)farray.At(fmaxidx + 1))->GetToT();
+        return static_cast<Double_t>(1./fmaxtot*rmaxtot);
+    }
 
 
-	private:
-		TObjArray farray;
-		Int_t fstartID;
-		Int_t fendID;
-		Int_t fmaxtot;
-		Int_t fmaxtotid;
-		Int_t fmintdcid;
-		Int_t fmintdc;
-		Int_t fdiffftot_v;
-		Int_t fdiffftot_u;
-		Double_t fpos;
-		Double_t fdifftot_l;
-		Double_t fdifftot_r;
-		Double_t fz;
 
-		ClassDef(myGroups,1);
+private:
+    TObjArray farray;
+    Int_t fstartID;
+    Int_t fendID;
+    Int_t fmaxtot;
+    Int_t fmaxtotid;
+    Int_t fmaxidx; // Array index of the maximum ToT hit
+    Int_t fmintdcid;
+    Int_t fmintdc;
+    Double_t fpos;
+    Double_t fz;
 
+    ClassDef(myGroups, 2); // Incremented schema version due to new member variable
 };
 
 #endif

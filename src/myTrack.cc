@@ -15,6 +15,13 @@ for(int l=0; l<2;l++){
 	fURdtot[l]  = -99999;	
 	fVLdtot[l]  = -99999;	
 	fVRdtot[l]  = -99999;	
+
+
+	fULrattot[l]  = -99999;	
+	fURrattot[l]  = -99999;	
+	fVLrattot[l]  = -99999;	
+	fVRrattot[l]  = -99999;	
+
 }
 	fConvPos = nullptr;
 	fCatPos = nullptr;
@@ -41,10 +48,10 @@ void myTrack::Calibrate(){
 		fDCHitPos_val[0] = (fdceve1->GetPos());	
 	
 		fXdtdc[0] = fdceve1->GetXdtdc();	
-		fULdtot[0] = fdceve1->GetULdtot();	
-		fURdtot[0] = fdceve1->GetURdtot();	
-		fVLdtot[0] = fdceve1->GetVLdtot();	
-		fVRdtot[0] = fdceve1->GetVRdtot();	
+		fULrattot[0] = fdceve1->GetULrattot();	
+		fURrattot[0] = fdceve1->GetURrattot();	
+		fVLrattot[0] = fdceve1->GetVLrattot();	
+		fVRrattot[0] = fdceve1->GetVRrattot();	
 		fXdir[0] = fdceve1->GetXdir();
 
 		fXdtdc[1] = fdceve2->GetXdtdc();	
@@ -54,6 +61,10 @@ void myTrack::Calibrate(){
 		fVRdtot[1] = fdceve2->GetVRdtot();	
 		fXdir[1]   = fdceve2->GetXdir();
 		
+		fULdtot[1] = fdceve2->GetULdtot();	
+		fURdtot[1] = fdceve2->GetURdtot();	
+		fVLdtot[1] = fdceve2->GetVLdtot();	
+		fVRdtot[1] = fdceve2->GetVRdtot();	
 	
 		}
 		double z_int = fConvPos->Z();

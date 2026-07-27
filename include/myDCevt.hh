@@ -43,12 +43,16 @@ class myDCevt:public TObject{
 		void SetUGrpID(Int_t id){fgrpid_u = id;}
 		void SetXGrpID(Int_t id){fgrpid_x = id;}
 
+		void SetVLrattot(Int_t value){ fvrattot_l = value; }
+		void SetULrattot(Int_t value){ furattot_l = value; }
+		void SetVRrattot(Int_t value){ fvrattot_r = value; }
+		void SetURrattot(Int_t value){ furattot_r = value; }
+		void SetXdtdc(Int_t value){ fxdifftdc = value; }
+
 		void SetVLdtot(Int_t value){ fvdifftot_l = value; }
 		void SetULdtot(Int_t value){ fudifftot_l = value; }
 		void SetVRdtot(Int_t value){ fvdifftot_r = value; }
 		void SetURdtot(Int_t value){ fudifftot_r = value; }
-		void SetXdtdc(Int_t value){ fxdifftdc = value; }
-
 		void SetXdir(int k){fXdir = k;}
 
 		Int_t GetVGrpID(){return fgrpid_v;}
@@ -67,12 +71,16 @@ class myDCevt:public TObject{
 		Int_t GetUID(){return fuid;}
 
 
+		Int_t GetVLrattot(){return fvrattot_l;}
+		Int_t GetULrattot(){return furattot_l;}
+		Int_t GetVRrattot(){return fvrattot_r;}
+		Int_t GetURrattot(){return furattot_r;}
+		Int_t GetXdtdc(){return fxdifftdc;}
+		
 		Int_t GetVLdtot(){return fvdifftot_l;}
 		Int_t GetULdtot(){return fudifftot_l;}
 		Int_t GetVRdtot(){return fvdifftot_r;}
 		Int_t GetURdtot(){return fudifftot_r;}
-		Int_t GetXdtdc(){return fxdifftdc;}
-		
 		Int_t GetXdir(){return fXdir;}
 
 	private:
@@ -92,6 +100,10 @@ class myDCevt:public TObject{
 		Int_t fudifftot_r;
 		Int_t fxdifftdc;
 		
+		Int_t fvrattot_l;
+		Int_t furattot_l;
+		Int_t fvrattot_r;
+		Int_t furattot_r;
 		Int_t fXdir;
 
 		TVector3 fpos;
