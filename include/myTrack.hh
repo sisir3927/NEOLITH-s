@@ -65,7 +65,7 @@ class myTrack:public TObject{
 	TVector3 GetDCHitPos(Int_t l){return fDCHitPos_val[l];}
 
 	myDCevt* GetDC1evt(){return fdceve1;}	
-	myDCevt* GetDC2evt(){return fdceve1;}	
+	myDCevt* GetDC2evt(){return fdceve2;}	
 
 
 	Double_t  GetConvPos(int i) {

@@ -47,24 +47,29 @@ void myTrack::Calibrate(){
 		fDCHitPos_val[1] = (fdceve2->GetPos());	
 		fDCHitPos_val[0] = (fdceve1->GetPos());	
 	
-		fXdtdc[0] = fdceve1->GetXdtdc();	
-		fULrattot[0] = fdceve1->GetULrattot();	
-		fURrattot[0] = fdceve1->GetURrattot();	
-		fVLrattot[0] = fdceve1->GetVLrattot();	
-		fVRrattot[0] = fdceve1->GetVRrattot();	
-		fXdir[0] = fdceve1->GetXdir();
+		// Layer 0 — from fdceve1
+		fXdtdc[0]    = fdceve1->GetXdtdc();
+		fULdtot[0]   = fdceve1->GetULdtot();
+		fURdtot[0]   = fdceve1->GetURdtot();
+		fVLdtot[0]   = fdceve1->GetVLdtot();
+		fVRdtot[0]   = fdceve1->GetVRdtot();
+		fULrattot[0] = fdceve1->GetULrattot();
+		fURrattot[0] = fdceve1->GetURrattot();
+		fVLrattot[0] = fdceve1->GetVLrattot();
+		fVRrattot[0] = fdceve1->GetVRrattot();
+		fXdir[0]     = fdceve1->GetXdir();
 
-		fXdtdc[1] = fdceve2->GetXdtdc();	
-		fULdtot[1] = fdceve2->GetULdtot();	
-		fURdtot[1] = fdceve2->GetURdtot();	
-		fVLdtot[1] = fdceve2->GetVLdtot();	
-		fVRdtot[1] = fdceve2->GetVRdtot();	
-		fXdir[1]   = fdceve2->GetXdir();
-		
-		fULdtot[1] = fdceve2->GetULdtot();	
-		fURdtot[1] = fdceve2->GetURdtot();	
-		fVLdtot[1] = fdceve2->GetVLdtot();	
-		fVRdtot[1] = fdceve2->GetVRdtot();	
+		// Layer 1 — from fdceve2
+		fXdtdc[1]    = fdceve2->GetXdtdc();
+		fULdtot[1]   = fdceve2->GetULdtot();
+		fURdtot[1]   = fdceve2->GetURdtot();
+		fVLdtot[1]   = fdceve2->GetVLdtot();
+		fVRdtot[1]   = fdceve2->GetVRdtot();
+		fULrattot[1] = fdceve2->GetULrattot();
+		fURrattot[1] = fdceve2->GetURrattot();
+		fVLrattot[1] = fdceve2->GetVLrattot();
+		fVRrattot[1] = fdceve2->GetVRrattot();
+		fXdir[1]     = fdceve2->GetXdir();
 	
 		}
 		double z_int = fConvPos->Z();
@@ -109,8 +114,6 @@ myTrack::~myTrack()
 ///////////////////////////////
 TVector3 myTrack::Extrapolate(double xang, double yang, TVector3* pos, double zint){
 
-
-	TVector3 *fv = new TVector3();
 
 	double x_int = pos->X() + TMath::Tan(xang)*(zint - pos->Z());
 	double y_int = pos->Y() + TMath::Tan(yang)*(zint - pos->Z());
