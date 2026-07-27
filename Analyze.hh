@@ -45,7 +45,7 @@ class Analyze{
 		void ReconstructSTC(int niter);
 		void ModifyTrack(myTrack *track);
 		void ReconstructTracks();
-
+		void ReconstructTrack(myTrack *track, int niter);
 		void BookHistograms();
 		void Clear();
 		void Clearin();
@@ -204,6 +204,7 @@ class Analyze{
     static constexpr double cath_rat_const = 10000.0;
     static constexpr int cath_rat_const_int = static_cast<int>(cath_rat_const);
 
+    const bool cath_rat_method = 0;
     static constexpr int rattot_kumax_asa[2] = { cath_rat_const_int, cath_rat_const_int };
     static constexpr int rattot_kvmax_asa[2] = { cath_rat_const_int, cath_rat_const_int };
 
@@ -229,7 +230,9 @@ std::vector<std::vector<double>> stc_ku_r_g;
 		const std::vector<double> z_pla={-124.95,-124.95,-124.95,124.95,124.95,124.95};
 
 		bool stc_make_kv;
-
+		std::vector<std::vector<double>> dw_mean;
+		
+		
 		TH1* h_test;
 		TH1* h_kv_totprim_s[2];
 		TH1* h_ku_totprim_s[2];	
@@ -257,6 +260,13 @@ std::vector<std::vector<double>> stc_ku_r_g;
 		TH1* h_ku_dtot_l_gs[2];
 		TH1* h_kv_dtot_r_gs[2];
 		TH1* h_ku_dtot_r_gs[2];
+		TH1* h_kv_rtot_l_gs[2];
+		TH1* h_ku_rtot_l_gs[2];
+		TH1* h_kv_rtot_r_gs[2];
+		TH1* h_ku_rtot_r_gs[2];
+
+		
+		
 		TH1* h_kv_dtot_gs[2];
 		TH1* h_ku_dtot_gs[2];
 		TH1* h_kv_dtot_as[2];
@@ -269,6 +279,10 @@ std::vector<std::vector<double>> stc_ku_r_g;
 		TH1* h_ku_dtot_r_as[2];
 		TH1*  h_kp_dw_as[2]; 
 
+		TH1* h_kv_rtot_l_as[2];
+		TH1* h_ku_rtot_l_as[2];
+		TH1* h_kv_rtot_r_as[2];
+		TH1* h_ku_rtot_r_as[2];
 
 		TH1* h_driflen_kp_s[2];
 		TH1* h_driflen_kp_gs[2];
