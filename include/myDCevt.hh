@@ -7,16 +7,32 @@ class myDCevt:public TObject{
 	public:
 		myDCevt(){
 
+		fx = -99999;
+		fy = -99999;
+		fz = -99999;
+		fgrpid_u = -1;
+		fgrpid_v = -1;
+		fgrpid_x = -1;
+		fpos.SetXYZ(fx,fy,fz);
 
-			fx =-99999;
-			fy = -99999;
-			fz = -99999;
-			fgrpid_u = -1;
-			fgrpid_v = -1;
-			fgrpid_x = -1;
-			fpos.SetXYZ(fx,fy,fz);		
+		fxid = -1;
+		fvid = -1;
+		fuid = -1;
 
-		};
+		fvdifftot_l = 0;
+		fudifftot_l = 0;
+		fvdifftot_r = 0;
+		fudifftot_r = 0;
+
+		fvrattot_l  = 0;
+		furattot_l  = 0;
+		fvrattot_r  = 0;
+		furattot_r  = 0;
+
+		fxdifftdc = 0;
+		fXdir     = 0;
+
+	};
 		virtual	~myDCevt(){};
 
 
