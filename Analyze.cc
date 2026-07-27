@@ -1,10 +1,10 @@
-include "Analyze.hh"
+#include "Analyze.hh"
 #include "iostream"
 
 Analyze::Analyze(int nRun, bool force):
         fRunNum(nRun){
 
-
+dw_mean.assign(2, std::vector<double>(48, 0.0));
                 std::ifstream in("dw_mean.csv");
                 std::string line;
 
@@ -121,9 +121,9 @@ Analyze::Analyze(int nRun, bool force):
                                 estore->ClearData();
 
                         }//estore
+                        stc_make_kv =true;
                         Clear();
                         ClearSTC();
-                        stc_make_kv =true;
                         MakeSTC();
 
                         ftree->Write();
@@ -1724,7 +1724,7 @@ void Analyze::ReconstructSTC(int niter){
                         //      std::cout<<"Y Angle "<<track->GetYAngle()<<std::endl;
                         ModifyTrack(track);
                         if(stc_make_kv ){
-                                std::cout<<track->GetZAngle()*180/3.1415<<std::endl;
+                               // std::cout<<track->GetZAngle()*180/3.1415<<std::endl;
                                 if(TMath::Abs(track->GetZAngle())<90*TMath::Pi()/180.){
 
                                         for(int l =0; l<2;l++){
