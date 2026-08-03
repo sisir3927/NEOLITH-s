@@ -6,20 +6,54 @@ Analyze::Analyze(int nRun, bool force):
 
 		dw_mean.assign(2, std::vector<double>(48, 0.0));
 		std::ifstream in("dw_mean.csv");
-		std::string line;
+		std::string line1;
 
-		while (std::getline(in, line)) {
-			std::stringstream ss(line);
+		while (std::getline(in, line1)) {
+			std::stringstream ss(line1);
 			int i, j;
 			double mean;
 			char comma;
 
 			ss >> i >> comma >> j >> comma >> mean;
-			dw_mean[i][j] = mean;
+			dw_mean[i-1][j] = mean;
 		}
 
 		in.close();
 
+
+
+
+kv_corrections[0].assign(80,{0.,1.});
+    kv_corrections[1].assign(80,{0.,1.});
+
+    ku_corrections[0].assign(80,{0.,1.});
+    ku_corrections[1].assign(80,{0.,1.});
+std::ifstream fincorr("LinearCorrections.csv");
+
+    std::string line;
+    getline(fincorr,line);   // skip header
+
+    while(getline(fincorr,line))
+    {
+        std::stringstream ss(line);
+
+        int detector, strip;
+        double a,b;
+        std::string side,tmp;
+
+        getline(ss,tmp,','); detector = stoi(tmp);
+        getline(ss,side,',');
+        getline(ss,tmp,','); strip = stoi(tmp);
+        getline(ss,tmp,','); a = stod(tmp);
+        getline(ss,tmp,','); b = stod(tmp);
+
+        if(side=="KV")
+            kv_corrections[detector-1][strip]={a,b};
+        else
+            ku_corrections[detector-1][strip]={a,b};
+    }
+
+fincorr.close();
 
 
 		std::cout<<"Hello"<<endl;
@@ -60,7 +94,7 @@ Analyze::Analyze(int nRun, bool force):
 		int neve =0;
 
 		if(force){
-			TFile *fout1 = new TFile (Form("root/sisir/Ana_Data_%d_v10.root",nRun), "RECREATE");
+			TFile *fout1 = new TFile (Form("root/sisir/Ana_Data_%d_v000.root",nRun), "RECREATE");
 			TTree* ftree = new TTree("Hit_Tree", "Data Hit Information");
 
 			ftree->Branch("fDCWireHits",&fDCWireHits);
@@ -100,7 +134,8 @@ Analyze::Analyze(int nRun, bool force):
 			neve = 0;
 
 			h_test= new TH1D("h_test","h_test",100,-0.5,8.5);
-			while(estore->GetNextEvent()&&neve<=10000){
+			h_test2= new TH1D("h_test2","h_test2",100,-0.5,8.5);
+			while(estore->GetNextEvent()&&neve<=100000){
 				std::cout << "\rProcessing Event: " << neve << std::flush;
 				//Initialize
 
@@ -134,7 +169,7 @@ Analyze::Analyze(int nRun, bool force):
 
 
 
-		TFile *fin = new TFile (Form("root/sisir/Ana_Data_%d_v10.root",nRun), "READ");
+		TFile *fin = new TFile (Form("root/sisir/Ana_Data_%d_v000.root",nRun), "READ");
 
 		std::cout <<" READING INPUT File"<<std::endl;
 		TTree *ftreein;
@@ -206,13 +241,13 @@ Analyze::Analyze(int nRun, bool force):
 
 		   }
 		   */
-		TFile *fout2 =new TFile("root/test2_v10.root","RECREATE");
+		TFile *fout2 =new TFile("root/test2_v000.root","RECREATE");
 		TTree* ftree2 = new TTree("Track_Tree", "Data Track Information");
 		ftree2->Branch("ftracks",&ftracks);
 
 		BookHistograms();
 
-
+		nftracks = 0;
 		for (Long64_t i=0; i<ftreein->GetEntries(); ++i) {
 			std::cout << "\rProcessing Event: " << i << std::flush;
 			ftreein->GetEntry(i);
@@ -230,8 +265,12 @@ Analyze::Analyze(int nRun, bool force):
 
 			MakeDCHits();
 			MakeTracks();
+			if(ftracks->GetEntriesFast()>0)nftracks++;
 			Clear();
 		}
+
+		std::cout<<"\n";
+		std::cout<<"Total Tracks: "<<nftracks<<std::endl;
 
 		//      fin->Close();
 		fout2->Write();
@@ -251,6 +290,9 @@ Analyze::Analyze(int nRun, bool force):
 		h_XYcath_s[1]->Reset();
 		h_driflen_dchit_s[0]->Reset();
 		h_driflen_dchit_s[1]->Reset();
+		h_driflen_dchit_sign_s[0]->Reset();
+		h_driflen_dchit_sign_s[1]->Reset();
+		h_driflen_dctrack_s[0]->Reset();
 		h_driflen_dctrack_s[0]->Reset();
 		h_driflen_dctrack_s[1]->Reset();
 
@@ -268,16 +310,28 @@ Analyze::Analyze(int nRun, bool force):
 		h_alpha_x[1]->Reset();
 		h_beta_y[0]->Reset();
 		h_beta_y[1]->Reset();
+		h_ang_dist_vertex->Reset();
+		h_ang_dx_vertex->Reset();
+		h_ang_dy_vertex->Reset();
+h_deltaXcath_shift_s[0]->Reset() ;
+h_deltaXcath_s[0]->Reset() ;
+h_deltaXcath_left_s[0]->Reset() ;
+h_deltaXcath_right_s[0]->Reset() ;
+h_deltaXcath_shift_s[1]->Reset() ;
+h_deltaXcath_s[1]->Reset() ;
+h_deltaXcath_left_s[1]->Reset() ;
+h_deltaXcath_right_s[1]->Reset() ;
 
-		fout2 = new TFile("root/test3_v10.root","RECREATE");
+
+		fout2 = new TFile("root/test3_v000.root","RECREATE");
 		ftree2 = new TTree("Track_Tree", "Data Track Information");
 		ftree2->Branch("ftracks",&ftracks);
 
 		BookHistograms();
 
-		ReconstructSTC(2);
+		ReconstructSTC(1);
 
-
+nftracks=0;
 		std::cout<<"------------------------------------------------------------------"<<std::endl;
 		for (Long64_t i=0; i<ftreein->GetEntries(); ++i) {
 			ftreein->GetEntry(i);
@@ -295,8 +349,11 @@ Analyze::Analyze(int nRun, bool force):
 
 			MakeDCHits();
 			MakeTracks();
+			if(ftracks->GetEntriesFast()>0)nftracks++;
 			Clear();
 		}
+		std::cout<<"\n";
+		std::cout<<"Total Tracks: "<<nftracks<<std::endl;
 
 		h_npvertex_basic->Draw("colz");
 
@@ -561,9 +618,9 @@ void Analyze::FormHitArrays(bool force){
 }//Force
 
 //Forming DC Hits
-bool fill_pot = false;
 Int_t nDCHits = fDCWireHits->GetEntriesFast();
 for (Int_t i = 0; i < nDCHits; i++) {
+bool fill_pot = false;
 	myDCHit *hit = (myDCHit*)fDCWireHits->At(i);
 	int geo_t = fDCWireHitsPara[i]->GetGeo()-20;
 	if(!ref_trig_bool[geo_t]) continue;
@@ -579,10 +636,16 @@ for (Int_t i = 0; i < nDCHits; i++) {
 	if (hit->GetDetName()->Contains("s1")) {
 		if (hit->GetDetName()->Contains("Kv")) {
 			fDCKvHits[0]->Add(hit);
+			if(cath_tot_corr){
+			hit->SetToT(kv_corrections[0][hit->GetWireNum()].a + kv_corrections[0][hit->GetWireNum()].b*hit->GetToT())
+	;		}
 		}
 		else if (hit->GetDetName()->Contains("Ku")) {
 
 			fDCKuHits[0]->Add(hit);
+			if(cath_tot_corr){
+			hit->SetToT(ku_corrections[0][hit->GetWireNum()].a + ku_corrections[0][hit->GetWireNum()].b*hit->GetToT())
+	;		}
 		}
 
 		else if (hit->GetDetName()->Contains("Pot")) {
@@ -607,9 +670,15 @@ for (Int_t i = 0; i < nDCHits; i++) {
 
 		if (hit->GetDetName()->Contains("Kv")) {
 
+			if(cath_tot_corr){
+			hit->SetToT(kv_corrections[1][hit->GetWireNum()].a + kv_corrections[1][hit->GetWireNum()].b*hit->GetToT())
+	;		}
 			fDCKvHits[1]->Add(hit);
 		}
 		else if (hit->GetDetName()->Contains("Ku")) {
+			if(cath_tot_corr){
+			hit->SetToT(ku_corrections[1][hit->GetWireNum()].a + ku_corrections[1][hit->GetWireNum()].b*hit->GetToT())
+	;		}
 
 			fDCKuHits[1]->Add(hit);
 		}
@@ -794,6 +863,10 @@ void Analyze::PrepareForSTC(){
 					{ h_kv_rtot_l_gs[l]->Fill(cath_rat_const /maxtot*lefttot);}
 					{  h_kv_rtot_r_gs[l]->Fill(cath_rat_const/(maxtot)*righttot);}
 					h_kv_totprim_gs[l]->Fill(maxtot);
+if(TMath::Abs(lefttot-righttot)/(double)(maxtot-std::min(lefttot,righttot))<0.1)h_kv_calib1_qid_s[l]->Fill(grp->GetMaxToTID(),maxtot); 
+if(TMath::Abs(lefttot-righttot)/(double)(maxtot-std::min(lefttot,righttot))>0.95)h_kv_calib2_qid_s[l]->Fill(grp->GetMaxToTID(),maxtot); 
+h_test->Fill(TMath::Abs(lefttot-righttot)/(double)(maxtot-std::max(lefttot,righttot)));
+h_test2->Fill(TMath::Abs(lefttot-righttot)/(double)(maxtot-std::min(lefttot,righttot)));
 					if(lefttot<0) std::cout<<lefttot<<"\n";
 					if(righttot<0) std::cout<<righttot<<"\n";
 				}
@@ -842,6 +915,8 @@ void Analyze::PrepareForSTC(){
 					h_ku_totprim_gs[l]->Fill(maxtot);
 					{ h_ku_rtot_l_gs[l]->Fill(cath_rat_const/maxtot*lefttot);}
 					{  h_ku_rtot_r_gs[l]->Fill(cath_rat_const/(maxtot)*righttot);}
+if(TMath::Abs(lefttot-righttot)/(double)(maxtot-std::min(lefttot,righttot))<0.1)h_ku_calib1_qid_s[l]->Fill(grp->GetMaxToTID(),maxtot); 
+if(TMath::Abs(lefttot-righttot)/(double)(maxtot-std::min(lefttot,righttot))>0.9)h_ku_calib2_qid_s[l]->Fill(grp->GetMaxToTID(),maxtot); 
 				}
 
 			}// mul>=3
@@ -1104,7 +1179,7 @@ void Analyze::MakeSTC(){
 				//GND
 				for(int ist = 0; ist<rattot_kumax_gnd[l]; ist++ ){
 					h = h_ku_rtot_l_gs[l];
-					stc_ku_l_g[l][ist] = -((1- (h->Integral(h->FindBin(0),h->FindBin(ist))/(1.*total_int_gl)))*(8.)-4);
+					stc_ku_l_g[l][ist] = ((1- (h->Integral(h->FindBin(0),h->FindBin(ist))/(1.*total_int_gl)))*(8.)-4);
 					h_driflen_ku_l_gs[l]->Fill(stc_ku_l_g[l][ist],h->GetBinContent(h->FindBin(ist)));
 
 					h = h_ku_rtot_r_gs[l];
@@ -1229,7 +1304,7 @@ void Analyze::MakeDCHits(){
 				h_XYcath_s[l]->Fill(xc,y);
 				if(TMath::Abs(static_cast<int>(std::round(TMath::Abs(xc)))%16-7)<5) continue;
 				double xcr = std::round(xc/16)*16;
-
+/*
 				for(int ig=0; ig<npgrps; ig++ ){
 					grp = (myGroups*)fDCKpGroups[l]->At(ig);
 					Int_t mul = grp->GetSize();
@@ -1256,7 +1331,7 @@ void Analyze::MakeDCHits(){
 					x_pot = anx[0] + x_drift; //potpos + kdir*(-8 + x_drift)
 					}
 					else {continue;}
-					*/
+					 //Comment end here
 
 					bool Asagi;
 					double potpos;
@@ -1313,7 +1388,9 @@ void Analyze::MakeDCHits(){
 
 							break;
 						}
-						else {continue;move_out_of_x_loop = true;; }
+						else {continue;move_out_of_x_loop = true;
+							//continue; 
+							}
 
 					} // group index                                ///
 
@@ -1322,6 +1399,11 @@ void Analyze::MakeDCHits(){
 					int tdc =  grp->At(minid)->GetTDC();
 					Double_t x_drift = CalcDriftLenPot( tdc,  l, Asagi);
 					potpos = grp->At(minid)->GetWirePos();
+h_deltaXcath_s[l]->Fill(xc-(potpos-kdir*8));
+
+if(kdir<0){h_deltaXcath_left_s[l]->Fill(xc-(potpos-kdir*8));h_deltaXcath_shift_s[l]->Fill(xc-(potpos-kdir*8)+0.231759) ;;
+}else{h_deltaXcath_right_s[l]->Fill(xc-(potpos-kdir*8));h_deltaXcath_shift_s[l]->Fill(xc-(potpos-kdir*8)-0.344433); 
+}
 					x_pot  = potpos + kdir*(-8 + x_drift);
 					Double_t z = grp->GetZ();
 					h_driflen_dchit_s[l]->Fill(x_drift);
@@ -1347,10 +1429,120 @@ void Analyze::MakeDCHits(){
 					dcevt->SetUID(ugrp->At(ugrp->GetMaxToTID()-ugrp->GetStartID())->GetID());
 					dcevt->SetVID(vgrp->At(vgrp->GetMaxToTID()-vgrp->GetStartID())->GetID());
 
+					if(y>170){std:cout<<"uid: "<<ugrp->At(ugrp->GetMaxToTID()-ugrp->GetStartID())->GetID()<<" "<<ugrp->At(ugrp->GetMaxToTID()-ugrp->GetStartID())->GetWirePosz() <<" vid: "<<vgrp->At(vgrp->GetMaxToTID()-vgrp->GetStartID())->GetID()<<"  "<<vgrp->At(vgrp->GetMaxToTID()-vgrp->GetStartID())->GetWirePosz()<<" "<<vgrp->GetMaxToTID()<<std::endl;}
+
 					break;
 
 
 				}//Loop over groups X
+*/
+
+for (int ig = 0; ig < npgrps; ig++) {
+    grp = (myGroups*)fDCKpGroups[l]->At(ig);
+    Int_t mul = grp->GetSize();
+    if (mul <= 1) continue; // Safety check
+
+    int minid = grp->GetMaxToTID() - grp->GetStartID();
+    if (minid < 0 || minid >= mul) continue; // Safety bounds check
+
+    bool found_wire = false;
+    bool Asagi = false;
+    double potpos = 0.0;
+    int kdir = 0;
+double x_pot = -99999;
+    for (int gid = 0; gid < mul; gid++) {
+        Asagi = grp->At(gid)->IsAsagi();
+        potpos = grp->At(gid)->GetWirePos();
+        double anx[2] = { potpos - 8.0, potpos + 8.0 };
+
+        if (TMath::Abs(anx[1] - xcr) <= 5) {
+            found_wire = true;
+            kdir = -1;
+            if (gid != mul - 1) {
+                if (grp->At(gid + 1)->GetToT() - grp->At(gid)->GetToT() > dw_mean[l][gid]) {
+                    kdir = 1;
+                    minid = gid + 1;
+                } else {
+                    minid = gid;
+                }
+            } else {
+                minid = gid;
+            }
+            break; // Found matching wire, exit gid loop
+        }
+        else if (TMath::Abs(anx[0] - xcr) <= 5) {
+            found_wire = true;
+            kdir = 1;
+            if (gid != 0) {
+                if (grp->At(gid)->GetToT() - grp->At(gid - 1)->GetToT() > dw_mean[l][gid - 1]) {
+                    kdir = 1;
+                    minid = gid;
+                } else {
+                    minid = gid - 1;
+                    kdir = -1;
+                }
+            } else {
+                kdir = 1;
+                minid = gid;
+            }
+            break; // Found matching wire, exit gid loop
+        }
+    } // gid loop
+
+    // If no matching wire was found in this Kp group, try the next group
+    if (!found_wire) continue; 
+
+    // Add Hits to myDCevt
+    int tdc = grp->At(minid)->GetTDC();
+    Double_t x_drift = CalcDriftLenPot(tdc, l, Asagi);
+    potpos = grp->At(minid)->GetWirePos();
+
+    h_deltaXcath_s[l]->Fill(xc - (potpos - kdir * 8));
+
+    if (kdir < 0) {
+        h_deltaXcath_left_s[l]->Fill(xc - (potpos - kdir * 8));
+        h_deltaXcath_shift_s[l]->Fill(xc - (potpos - kdir * 8) + 0.231759);
+    } else {
+        h_deltaXcath_right_s[l]->Fill(xc - (potpos - kdir * 8));
+        h_deltaXcath_shift_s[l]->Fill(xc - (potpos - kdir * 8) - 0.344433);
+    }
+
+    x_pot = potpos + kdir * (-8 + x_drift);
+    Double_t z = grp->GetZ();
+    h_driflen_dchit_s[l]->Fill(x_drift);
+    h_driflen_dchit_sign_s[l]->Fill(kdir*x_drift);
+
+    int ndceve = fDCevts[l]->GetEntriesFast();
+    myDCevt* dcevt = new ((*fDCevts[l])[ndceve]) myDCevt();
+    dcevt->SetPos(x_pot, y, z);
+    h_XY_s[l]->Fill(x_pot, y);
+    dcevt->SetXdir(kdir);
+
+    ugrp = (myGroups*)fDCKuGroups[l]->At(uid[iu]);
+    vgrp = (myGroups*)fDCKvGroups[l]->At(vid[iv]);
+    dcevt->SetURdtot(ugrp->GetdToTR());
+    dcevt->SetVRdtot(vgrp->GetdToTR());
+    dcevt->SetULdtot(ugrp->GetdToTL());
+    dcevt->SetVLdtot(vgrp->GetdToTL());
+    dcevt->SetURrattot(ugrp->GetratToTR() * cath_rat_const);
+    dcevt->SetVRrattot(vgrp->GetratToTR() * cath_rat_const);
+    dcevt->SetULrattot(ugrp->GetratToTL() * cath_rat_const);
+    dcevt->SetVLrattot(vgrp->GetratToTL() * cath_rat_const);
+    dcevt->SetXdtdc(tdc);
+    dcevt->SetXID(grp->At(minid)->GetID());
+    dcevt->SetUID(ugrp->At(ugrp->GetMaxToTID() - ugrp->GetStartID())->GetID());
+    dcevt->SetVID(vgrp->At(vgrp->GetMaxToTID() - vgrp->GetStartID())->GetID());
+
+    if (y > 170) {
+        std::cout << "uid: " << ugrp->At(ugrp->GetMaxToTID() - ugrp->GetStartID())->GetID() << " " 
+                  << ugrp->At(ugrp->GetMaxToTID() - ugrp->GetStartID())->GetWirePosz() 
+                  << " vid: " << vgrp->At(vgrp->GetMaxToTID() - vgrp->GetStartID())->GetID() << " " 
+                  << vgrp->At(vgrp->GetMaxToTID() - vgrp->GetStartID())->GetWirePosz() << " " 
+                  << vgrp->GetMaxToTID() << std::endl;
+    }
+
+    break; // Hit added for this (u, v) pair; move to next (u, v) pair
+} // ig loop
 
 
 
@@ -1474,7 +1666,7 @@ Double_t Analyze::MakePositionCathode(myGroups* grp,int l){
 			}else{
 				if(rtot_r !=0) wt_r = double(rtot_r);
 				else wt_r = 0.0000001;
-				if(dtot_l !=0) wt_l = double(rtot_l);
+				if(rtot_l !=0) wt_l = double(rtot_l);
 				else wt_l = 0.0000001;
 				avg_drf =  (stc_kv_r_a[l][rtot_r]*wt_r+stc_kv_l_a[l][rtot_l]*wt_l)/(wt_l +wt_r);
 				pos = strippos + avg_drf;
@@ -1569,7 +1761,7 @@ void Analyze::MakeTracks(){
 			track->SetVID(1,dcevt->GetVID());
 			track->SetUID(1,dcevt->GetUID());
 			track->Calibrate();
-			//ReconstructTrack(track,1);
+			ReconstructTrack(track,1);
 			myDCHitPara* para = nullptr;
 			for(int l =0 ;l<2;l++){ para = const_cast<myDCHitPara*>(FindDCHitPara(track->GetXID(l)));
 				Bool_t asagix = para->GetIsAsagi();
@@ -1640,8 +1832,10 @@ void Analyze::MakeTracks(){
 			h_beta->Fill(track->GetYAngle()*180/TMath::Pi());
 			h_theta->Fill(track->GetZAngle()*180/TMath::Pi());
 
-			if(!(fconv && fcat)) {
 
+	//		if(!(fconv && fcat)) {
+if(!fconv){
+//if(0){
 				if(ftracks->GetEntriesFast()>0){
 					((myTrack*)ftracks->At(ftracks->GetEntriesFast()-1))->Clear();
 					((myTrack*)ftracks_cum->At(cum_index))->Clear();
@@ -1678,7 +1872,7 @@ void Analyze::MakeTracks(){
 	}*/
 
 	Int_t nTracks = ftracks->GetEntriesFast();
-	if(nTracks ==2)
+	if(nTracks >=2)
 		for (Int_t i = 0; i < nTracks - 1; ++i) {
 			myTrack* tr1 = (myTrack*)ftracks->At(i);
 
@@ -1687,11 +1881,16 @@ void Analyze::MakeTracks(){
 
 				TVector3 dist_vec = tr1->GetnpVertex() - tr2->GetnpVertex();
 				Double_t dist = dist_vec.Mag();
+				double ang = (tr1->GetVect()).Angle(tr2->GetVect())*180/3.141599;
 
 				// Only fill for tracks from the same conversion
 				if (tr1->GetConvID() == tr2->GetConvID() &&
 						tr1->GetConvID() >= 0) {
 					if(dist_vec.X()!=0){
+						h_ang_vertex->Fill(ang);
+						h_ang_dist_vertex->Fill(ang,dist);
+						h_ang_dy_vertex->Fill(ang,TMath::Abs(dist_vec.Y()));
+						h_ang_dx_vertex->Fill(ang,TMath::Abs(dist_vec.X()));
 						h_dist_vertex->Fill(dist);
 						h_dxdy_vertex->Fill(TMath::Abs(dist_vec.X()),TMath::Abs(dist_vec.Y()));
 						h_iddy_vertex->Fill(tr1->GetConvID() ,
@@ -1764,8 +1963,8 @@ void Analyze::ReconstructSTC(int niter){
 							int diff_r = track->GetVRdtot(l);
 							int diff_l = track->GetVLdtot(l);
 
-							int rat_r = track->GetVRdtot(l);
-							int rat_l = track->GetVLdtot(l);
+							int rat_r = track->GetVRrattot(l);
+							int rat_l = track->GetVLrattot(l);
 
 
 							if(asagiv)
@@ -1790,7 +1989,6 @@ void Analyze::ReconstructSTC(int niter){
 
 
 
-							std::cout<<rat_l<<std::endl;
 
 						}// cath_rat_method
 					}
@@ -1830,7 +2028,8 @@ void Analyze::ReconstructSTC(int niter){
 void Analyze::ModifyTrack(myTrack* track){
 	myDCHitPara* para = nullptr;
 	double strippos,posv,posu,posx,posy,avg_drf,wt_l,wt_r;
-
+	posv = -99999;
+	posu = -99999;
 	int dtot_r ;
 	int dtot_l ;
 	int rtot_r;
@@ -1972,6 +2171,7 @@ void Analyze::ModifyTrack(myTrack* track){
 
 
 		posy = (posu-posv)/TMath::Sqrt(2);
+//		std::cout<<posy<<std::endl;
 		para = const_cast<myDCHitPara*>(FindDCHitPara(track->GetXID(l)));
 		Bool_t asagix = para->GetIsAsagi();
 		int tdc = track->GetXtdc(l);
@@ -2003,7 +2203,9 @@ void Analyze::ReconstructTrack(myTrack *track, int niter){
 			double x_wire  = para->GetWirePosition();
 			int x_dir = track->GetXdir(l);
 			x_drift = (track->GetDCHitPos(l).X() - x_wire)/x_dir +8;
+	//	if(x_drift/TMath::Cos(track->GetXAngle())<=8)	
 			x_drift = x_drift/TMath::Cos(track->GetXAngle());
+
 
 			double x = x_wire +x_dir*(x_drift-8);
 			double y = track->GetDCHitPos(l).Y();
@@ -2011,8 +2213,9 @@ void Analyze::ReconstructTrack(myTrack *track, int niter){
 
 			track->SetDCHit(l,TVector3(x,y,z));
 
-			if(iter+1==niter)       h_driflen_dctrack_s[l]->Fill(x_drift);
-
+			if(iter+1==niter)      { h_driflen_dctrack_s[l]->Fill(x_drift);
+			h_driflen_dctrack_sign_s[l]->Fill(x_dir*x_drift);
+}
 		}
 		track->Calibrate();
 	}//Mumber of iterations
@@ -2269,7 +2472,7 @@ void Analyze::Clear(){
 		fDCKuGroups[l]->Clear();
 		fDCKpGroups[l]->Clear();
 
-		fDCevts[l]->Clear();
+		fDCevts[l]->Clear("C");
 
 	}
 
@@ -2429,6 +2632,16 @@ void Analyze::BookHistograms(){
 		h_kp_dtdw_gs[l] = new TH2I(Form("h_kp_dtdw_gnd_s%d",l+1),Form("dT vs dW in Group Kp GND NEOLITH-s %d",l+1),700,-3000,3000,201,-100,100);
 		h_kv_totid_s[l] = new TH2I(Form("h_kv_totid_s%d",l+1),Form(" ToT ID Kv NEOLITH-s %d",l+1),80,-0.5,79.5,1200,0,14000);
 		h_ku_totid_s[l] = new TH2I(Form("h_ku_totid_s%d",l+1),Form(" ToT ID Ku NEOLITH-s %d",l+1),80,-0.5,79.5,1200,0,14000);
+	
+	
+		h_kv_calib1_qid_s[l] = new TH2I(Form("h_kv_calib1_qid_s%d",l+1),Form(" ToT ID  Calib 1 Kv NEOLITH-s %d",l+1),80,-0.5,79.5,1200,0,14000);
+		h_kv_calib2_qid_s[l] = new TH2I(Form("h_kv_calib2_qid_s%d",l+1),Form(" ToT ID  Calib 2 Kv NEOLITH-s %d",l+1),80,-0.5,79.5,1200,0,14000);
+	
+		h_ku_calib1_qid_s[l] = new TH2I(Form("h_ku_calib1_qid_s%d",l+1),Form(" ToT ID  Calib 1 Ku NEOLITH-s %d",l+1),80,-0.5,79.5,1200,0,14000);
+		h_ku_calib2_qid_s[l] = new TH2I(Form("h_ku_calib2_qid_s%d",l+1),Form(" ToT ID  Calib 2 Ku NEOLITH-s %d",l+1),80,-0.5,79.5,1200,0,14000);
+ 
+	
+	
 		h_kp_tdcid_s[l] = new TH2I(Form("h_kp_tdcid_s%d",l+1),Form(" TDC ID Kp NEOLITH-s %d",l+1),80,-0.5,79.5,850,-4000,4000);
 		h_kv_dtot_l_s[l] = new TH1I(Form("h_kv_dtot_l_s%d",l+1),Form("diff ToT Left Kv NEOLITH-s %d",l+1),10001,0,10000);
 		h_ku_dtot_l_s[l] = new TH1I(Form("h_ku_dtot_l_s%d",l+1),Form("diff ToT Left Ku NEOLITH-s %d",l+1),10001,0,10000);
@@ -2480,7 +2693,9 @@ void Analyze::BookHistograms(){
 		h_driflen_ku_gs[l] = new TH1D(Form("h_driflen_ku_gs%d",l+1),Form(" Drift Length Distribution Ku GND NEOLITH-s %d",l+1),100,-5,5 );
 
 		h_driflen_dchit_s[l] = new TH1D(Form("h_driflen_dchit_s%d",l+1),Form("(WHile DC Hit formation) Drift Length Distribution Kp NEOLITH-s %d",l+1),100,0,10);
+		h_driflen_dchit_sign_s[l] = new TH1D(Form("h_driflen_dchit_sign_s%d",l+1),Form("(WHile DC Hit formation) Signed Drift Length Distribution Kp NEOLITH-s %d",l+1),200,-10,10);
 		h_driflen_dctrack_s[l] = new TH1D(Form("h_driflen_dctrack_s%d",l+1),Form("(WHile DC Track formation) Drift Length Distribution Kp NEOLITH-s %d",l+1),100,0,10);
+		h_driflen_dctrack_sign_s[l] = new TH1D(Form("h_driflen_dctrack_sign_s%d",l+1),Form("(WHile DC Track formation) Signed Drift Length Distribution Kp NEOLITH-s %d",l+1),200,-10,10);
 		h_XY_s[l] = new TH2D(Form("h_XY_s%d",l+1),Form("XY image at potential plane NEOLITH-s%d",l+1),300,-400,400,300,-400,400);
 		h_XYcath_s[l] = new TH2D(Form("h_XYcath_s%d",l+1),Form("XY from Cathode Planes image at potential plane NEOLITH-s%d",l+1),3000,-400,400,300,-400,400);
 
@@ -2489,6 +2704,11 @@ void Analyze::BookHistograms(){
 		h_alpha_x[l] = new TH2D(Form("h_alpha_x_s%d",l+1),Form("alpha(X-axis) distribution vs x NEOLITH-s%d",l+1),300,-90,90,300,-400,400);
 		h_beta_y[l] = new TH2D(Form("h_beta_y_s%d",l+1),Form("beta(X-axis) distribution vs y NEOLITH-s%d",l+1),300,-90,90,300,-400,400);
 
+		h_deltaXcath_shift_s[l] = new TH1D(Form("h_deltaXcath_shift_s%d",l+1),Form("Delta Xcath with anode wire in DC Hits with shift in NEOLITH-s%d",l+1),800,-4,4); 
+		h_deltaXcath_s[l] = new TH1D(Form("h_deltaXcath_s%d",l+1 ),Form("Delta Xcath with anode wire in DC Hits without shift in NEOLITH-s%d",l+1),800,-4,4); 
+		h_deltaXcath_left_s[l] = new TH1D(Form("h_deltaXcath_left_s%d",l+1 ),Form("Delta Xcath with anode wire in DC Hits without shift in NEOLITH-s%d for Left events",l+1),800,-4,4); 
+		h_deltaXcath_right_s[l] = new TH1D(Form("h_deltaXcath_right_s%d",l+1 ),Form("Delta Xcath with anode wire in DC Hits without shift in NEOLITH-s%d for right events",l+1),800,-4,4); 
+	
 	}
 
 	h_npvertex_basic = new TH2D("h_npvertex_basic","N-P Vertex at Middle of Layer1 before any correction",250,-300,300,250,-300,300);
@@ -2503,9 +2723,14 @@ void Analyze::BookHistograms(){
 	h_npvertex_a2 = new TH2D("h_npvertex_a2","np Vertex with alpha <2 deg",250,-300,300,250,-300,300);
 
 
-	h_alpha = new TH1D("h_alpha","alpha distribution",90,-90,90);
-	h_beta = new TH1D("h_beta","beta distribution",90,-90,90);
+	h_alpha = new TH1D("h_alpha","alpha distribution",150,-90,90);
+	h_beta = new TH1D("h_beta","beta distribution",150,-90,90);
 	h_theta = new TH1D("h_theta","theta distribution",150,0,90);
+	
+	h_ang_vertex = new TH1D("h_ang_vertex", "Anlge betweent the tracks of in the same layer", 100,0,90);
+	h_ang_dist_vertex = new TH2D("h_ang_dist_vertex", "Angle  vs Distance between the tracks  of in the same layer", 100,0,90,100,0,200);
+	h_ang_dx_vertex = new TH2D("h_ang_dx_vertex", "Angle  vs dx between the tracks  of in the same layer", 100,0,90,100,0,200);
+	h_ang_dy_vertex = new TH2D("h_ang_dy_vertex", "Angle  vs dy between the tracks  of in the same layer", 100,0,90,100,0,200);
 
 	h_x1x2 = new TH2D("h_x1x2","x1 (x-axis) x2",300,-400,400,300,-400,400);
 	h_y1y2 = new TH2D("h_y1y2","y1 (x-axis) y2",300,-400,400,300,-400,400);

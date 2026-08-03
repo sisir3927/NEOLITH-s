@@ -201,25 +201,25 @@ class Analyze{
 		static constexpr int tdcprim_kpmax_gnd [2]= {1000,1000};
 		static constexpr int tdcprim_kpmin_gnd[2]= {-1800,-1800};
 
-    static constexpr double cath_rat_const = 10000.0;
-    static constexpr int cath_rat_const_int = static_cast<int>(cath_rat_const);
+		static constexpr double cath_rat_const = 10000.0;
+		static constexpr int cath_rat_const_int = static_cast<int>(cath_rat_const);
 
-    const bool cath_rat_method = 0;
-    static constexpr int rattot_kumax_asa[2] = { cath_rat_const_int, cath_rat_const_int };
-    static constexpr int rattot_kvmax_asa[2] = { cath_rat_const_int, cath_rat_const_int };
+		const bool cath_rat_method = 1;
+		static constexpr int rattot_kumax_asa[2] = { cath_rat_const_int, cath_rat_const_int };
+		static constexpr int rattot_kvmax_asa[2] = { cath_rat_const_int, cath_rat_const_int };
 
-    static constexpr int rattot_kumax_gnd[2] = { cath_rat_const_int, cath_rat_const_int };
-    static constexpr int rattot_kvmax_gnd[2] = { cath_rat_const_int, cath_rat_const_int };
+		static constexpr int rattot_kumax_gnd[2] = { cath_rat_const_int, cath_rat_const_int };
+		static constexpr int rattot_kvmax_gnd[2] = { cath_rat_const_int, cath_rat_const_int };
 
-std::vector<std::vector<double>> stc_kv_l_a;
-std::vector<std::vector<double>> stc_kv_l_g;
-std::vector<std::vector<double>> stc_ku_l_a;
-std::vector<std::vector<double>> stc_ku_l_g;
+		std::vector<std::vector<double>> stc_kv_l_a;
+		std::vector<std::vector<double>> stc_kv_l_g;
+		std::vector<std::vector<double>> stc_ku_l_a;
+		std::vector<std::vector<double>> stc_ku_l_g;
 
-std::vector<std::vector<double>> stc_kv_r_a;
-std::vector<std::vector<double>> stc_kv_r_g;
-std::vector<std::vector<double>> stc_ku_r_a;
-std::vector<std::vector<double>> stc_ku_r_g;
+		std::vector<std::vector<double>> stc_kv_r_a;
+		std::vector<std::vector<double>> stc_kv_r_g;
+		std::vector<std::vector<double>> stc_ku_r_a;
+		std::vector<std::vector<double>> stc_ku_r_g;
 
 		std::vector<std::vector<double>> stc_kp{2, std::vector<double>(tdcprim_kpmax[0] - tdcprim_kpmin[0] + 1)};
 		std::vector<std::vector<double>> stc_kp_g{2, std::vector<double>(tdcprim_kpmax_gnd[0] - tdcprim_kpmin_gnd[0] + 1)};
@@ -231,9 +231,20 @@ std::vector<std::vector<double>> stc_ku_r_g;
 
 		bool stc_make_kv;
 		std::vector<std::vector<double>> dw_mean;
+		struct LinearCorrection{
+			double a;
+			double b;
+		};
+
+		std::vector<LinearCorrection> kv_corrections[2];
+		std::vector<LinearCorrection> ku_corrections[2];	
 		
+		const bool cath_tot_corr = 0;
+
+		Int_t nftracks;
 		
 		TH1* h_test;
+		TH1* h_test2;
 		TH1* h_kv_totprim_s[2];
 		TH1* h_ku_totprim_s[2];	
 		TH1* h_kv_totprim_as[2];
@@ -265,8 +276,12 @@ std::vector<std::vector<double>> stc_ku_r_g;
 		TH1* h_kv_rtot_r_gs[2];
 		TH1* h_ku_rtot_r_gs[2];
 
-		
-		
+		TH1* h_kv_calib1_qid_s[2];
+		TH1* h_ku_calib1_qid_s[2];
+		TH1* h_kv_calib2_qid_s[2];
+		TH1* h_ku_calib2_qid_s[2];
+
+
 		TH1* h_kv_dtot_gs[2];
 		TH1* h_ku_dtot_gs[2];
 		TH1* h_kv_dtot_as[2];
@@ -296,6 +311,7 @@ std::vector<std::vector<double>> stc_ku_r_g;
 		TH1* h_driflen_kv_r_as[2];
 		TH1* h_driflen_kv_r_gs[2];
 		TH1* h_driflen_dchit_s[2];
+		TH1* h_driflen_dchit_sign_s[2];
 
 		TH1* h_XY_s[2];
 		TH1* h_XYcath_s[2];
@@ -316,30 +332,40 @@ std::vector<std::vector<double>> stc_ku_r_g;
 		TH1* h_kv_dtot_r_corr_as[2];
 		TH1* h_ku_dtot_r_corr_as[2];
 
+		TH1* h_deltaXcath_s[2];
+		TH1* h_deltaXcath_left_s[2];
+		TH1* h_deltaXcath_right_s[2];
+		TH1* h_deltaXcath_shift_s[2];
+
+		TH1* h_ang_dist_vertex;
+		TH1* h_ang_dx_vertex;
+		TH1* h_ang_dy_vertex;
+		TH1* h_ang_vertex;
 		TH1* h_dist_vertex;
 		TH1* h_dxdy_vertex;
-// 1D Histograms (Single pointers)
-TH1* h_alpha;
-TH1* h_beta;
-TH1* h_theta;
+		// 1D Histograms (Single pointers)
+		TH1* h_alpha;
+		TH1* h_beta;
+		TH1* h_theta;
 
-// 1D Histogram Arrays (2 layers)
-TH1* h_driflen_kv_gs[2];
-TH1* h_driflen_ku_gs[2];
-TH1* h_driflen_dctrack_s[2];
+		// 1D Histogram Arrays (2 layers)
+		TH1* h_driflen_kv_gs[2];
+		TH1* h_driflen_ku_gs[2];
+		TH1* h_driflen_dctrack_s[2];
+		TH1* h_driflen_dctrack_sign_s[2];
 
-// 2D Histograms (Single pointers)
-TH1* h_iddy_vertex;
-TH1* h_x1x2;
-TH1* h_y1y2;
+		// 2D Histograms (Single pointers)
+		TH1* h_iddy_vertex;
+		TH1* h_x1x2;
+		TH1* h_y1y2;
 
-// 2D Histogram Arrays (2 layers)
-TH1* h_alpha_drift[2];
-TH1* h_alpha_x[2];
-TH1* h_beta_y[2];
+		// 2D Histogram Arrays (2 layers)
+		TH1* h_alpha_drift[2];
+		TH1* h_alpha_x[2];
+		TH1* h_beta_y[2];
 
-// 2D Array for Cells (Replace 'N_CELLS' with the total number of cells/columns defined in your loop)
-TH1* h_kp_dw_s_cell[2][48];
+		// 2D Array for Cells (Replace 'N_CELLS' with the total number of cells/columns defined in your loop)
+		TH1* h_kp_dw_s_cell[2][48];
 
 		TFile* f;
 		TTree* tree;

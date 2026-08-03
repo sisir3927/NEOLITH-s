@@ -30,8 +30,8 @@ class myDCHit:public TObject{
 
 		void SetTrailTDC( int trailtdc){ftrailedge = trailtdc;}
 
-		void SetWirePos( int wpos){fwirepos = wpos;}
-		void SetWirePosz(int wposz){fwireposz =wposz;}
+		void SetWirePos( double wpos){fwirepos = wpos;}
+		void SetWirePosz(double wposz){fwireposz =wposz;}
 
 		void SetDir(TString nm){fdir =nm;}
 

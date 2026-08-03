@@ -101,8 +101,8 @@ class myDCevt:public TObject{
 
 	private:
 
-		Int_t fx;
-		Int_t fy;
+		Double_t fx;
+		Double_t fy;
 		Int_t fz;
 		Int_t fxid; //These IDs are Universal ID, not special for the plane
 		Int_t fvid;
